@@ -79,29 +79,15 @@ docker run -p 8080:8080 --env-file .env.local urmeetings
 
 ---
 
-## 4. What's NOT from Lovable anymore
 
-| Concern | Was | Now |
-|---|---|---|
-| AI (summaries + Q&A) | Lovable AI Gateway | **Direct Google Gemini** (`GEMINI_API_KEY`) |
-| Database + Auth | Lovable Cloud (Supabase wrapped) | **Your own Supabase project** |
-| Hosting | Lovable published URL | **Vercel / Cloud Run / Docker** |
-
-The `@/integrations/supabase/*` files are auto-generated wrappers around
-plain `@supabase/supabase-js`. They read `VITE_SUPABASE_*` in the browser
-and `SUPABASE_*` on the server — so pointing them at your own project is
-purely an env var change, no code edits needed.
-
----
-
-## 5. Live transcription — no cost
+## 4. Live transcription — no cost
 
 Live transcription uses the browser's built-in Web Speech API. Works in
 Chrome / Edge / Safari. No API key, no server round-trip, no bill.
 
 ---
 
-## 6. Costs summary
+## 5. Costs summary
 
 | Service | Free tier | Overage risk |
 |---|---|---|
