@@ -1,0 +1,9 @@
+node_modules
+.output
+.vercel
+.git
+.env
+.env.local
+.env.*.local
+dist
+*.log
