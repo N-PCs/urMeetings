@@ -237,7 +237,7 @@ function Landing() {
                 <Link
                   to="/live"
                   className="inline-flex h-12 items-center gap-2 rounded-xl ink-border bg-yellow px-5 text-base font-bold text-foreground no-underline pop"
-                  style={{background:"white"}}
+                  style={{ background: "white" }}
                 >
                   <MousePointer2 className="h-4 w-4" /> Start recording
                 </Link>

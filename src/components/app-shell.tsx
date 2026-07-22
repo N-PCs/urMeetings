@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ReactNode } from "react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 type NavItem = { to: string; label: string; icon: typeof Radio; color: string };
 
@@ -14,6 +15,21 @@ const NAV: NavItem[] = [
   { to: "/ask", label: "Ask", icon: Sparkles, color: "bg-violet" },
   { to: "/settings", label: "Settings", icon: Settings, color: "bg-mint" },
 ];
+
+function getInitials(name?: string | null, email?: string | null): string {
+  if (name) {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }
+  if (email) {
+    return email[0].toUpperCase();
+  }
+  return "U";
+}
 
 export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
@@ -25,6 +41,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     toast.success("Signed out");
     router.navigate({ to: "/" });
   }
+
+  const avatarUrl = user?.user_metadata?.avatar_url;
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -40,6 +58,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2">
             {isAuthenticated ? (
               <>
+                <Avatar className="h-9 w-9 border-2 border-ink">
+                  {avatarUrl ? (
+                    <AvatarImage src={avatarUrl} alt="User avatar" />
+                  ) : (
+                    <AvatarFallback className="bg-violet text-white font-bold">
+                      {getInitials(user?.user_metadata?.full_name, user?.email)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
                 <span className="hidden max-w-[160px] truncate text-xs text-muted-foreground sm:inline">
                   {user?.email}
                 </span>

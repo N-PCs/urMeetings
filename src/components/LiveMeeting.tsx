@@ -1,7 +1,6 @@
-
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Mic, Square, Save, Trash2, Loader2, AlertCircle } from "lucide-react";
+import { Mic, Square, Save, Trash2, Loader2, AlertCircle, Video, VideoOff } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useSession } from "@/hooks/use-session";
 import { useServerFn } from "@tanstack/react-start";
@@ -14,6 +13,8 @@ export function LiveMeeting() {
   const [saving, setSaving] = useState(false);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [screenRecording, setScreenRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const save = useServerFn(saveMeeting);
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -43,12 +44,60 @@ export function LiveMeeting() {
     }
   }
 
+  async function handleScreenToggle() {
+    if (screenRecording) {
+      mediaRecorder?.stop();
+      setScreenRecording(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true,
+        });
+        const recorder = new MediaRecorder(stream);
+        const chunks: Blob[] = [];
+
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) chunks.push(event.data);
+        };
+
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: "video/webm" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.download = `meeting-recording-${Date.now()}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+          stream.getTracks().forEach((track) => track.stop());
+        };
+
+        recorder.start();
+        setMediaRecorder(recorder);
+        setScreenRecording(true);
+        toast.success("Screen recording started!");
+      } catch (err) {
+        toast.error("Failed to start screen recording. Please grant screen sharing permissions.");
+        console.error(err);
+      }
+    }
+  }
+
   function handleClear() {
     if (!confirm("Clear this transcript?")) return;
     speech.stop();
     speech.reset();
     setStartedAt(null);
     setElapsed(0);
+    if (screenRecording) {
+      mediaRecorder?.stop();
+      setScreenRecording(false);
+    }
   }
 
   async function handleSave() {
@@ -65,6 +114,10 @@ export function LiveMeeting() {
     setSaving(true);
     try {
       speech.stop();
+      if (screenRecording) {
+        mediaRecorder?.stop();
+        setScreenRecording(false);
+      }
       const durationSeconds = startedAt ? Math.round((Date.now() - startedAt) / 1000) : undefined;
       const result = await save({ data: { transcript, source: "live", durationSeconds } });
       toast.success(`Saved: ${result.title}`);
@@ -131,11 +184,11 @@ export function LiveMeeting() {
         )}
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+      <div className="grid gap-2 sm:grid-cols-[1.2fr_1.5fr_auto_auto]">
         <button
           onClick={handleToggle}
           disabled={!speech.supported}
-          className={`flex h-12 items-center justify-center gap-2 rounded-xl ink-border text-base font-black pop disabled:opacity-60 ${
+          className={`flex h-12 items-center justify-center gap-2 rounded-xl ink-border text-sm font-bold pop disabled:opacity-60 ${
             speech.listening ? "bg-pink" : "bg-violet text-primary-foreground"
           }`}
         >
@@ -151,6 +204,23 @@ export function LiveMeeting() {
           )}
         </button>
         <button
+          onClick={handleScreenToggle}
+          className={`flex h-12 items-center justify-center gap-2 rounded-xl ink-border text-sm font-bold pop disabled:opacity-60 ${
+            screenRecording ? "bg-red-500 text-white" : "bg-mint"
+          }`}
+        >
+          {screenRecording ? (
+            <>
+              <span className="h-2 w-2 rounded-full bg-white blink" />
+              <VideoOff className="h-4 w-4" /> Stop recording
+            </>
+          ) : (
+            <>
+              <Video className="h-4 w-4" /> Screen record
+            </>
+          )}
+        </button>
+        <button
           onClick={handleSave}
           disabled={saving || !speech.finalTranscript.trim()}
           className="flex h-12 items-center justify-center gap-2 rounded-xl ink-border bg-yellow px-4 text-sm font-black pop disabled:opacity-60"
@@ -160,7 +230,7 @@ export function LiveMeeting() {
         </button>
         <button
           onClick={handleClear}
-          disabled={!speech.finalTranscript && !speech.interimTranscript}
+          disabled={!speech.finalTranscript && !speech.interimTranscript && !screenRecording}
           className="flex h-12 items-center justify-center gap-2 rounded-xl ink-border bg-card px-3 text-sm font-bold pop disabled:opacity-60"
         >
           <Trash2 className="h-4 w-4" />

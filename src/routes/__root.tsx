@@ -133,15 +133,6 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
-  const [overlayPosition, setOverlayPosition] = useState({ x: 100, y: 20 });
-  const [hasSetPosition, setHasSetPosition] = useState(false);
-
-  useEffect(() => {
-    if (!hasSetPosition && typeof window !== "undefined") {
-      setOverlayPosition({ x: window.innerWidth - 540, y: 20 });
-      setHasSetPosition(true);
-    }
-  }, [hasSetPosition]);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -157,7 +148,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster position="top-center" />
-      <FloatingOverlay defaultPosition={overlayPosition} />
+      <FloatingOverlay />
     </QueryClientProvider>
   );
 }

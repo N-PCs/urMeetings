@@ -175,6 +175,34 @@ export const deleteMeeting = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const UpdateInput = z.object({
+  id: z.string().uuid(),
+  title: z.string().max(200).optional(),
+  summary: z.string().max(4000).optional(),
+  transcript: z.string().max(200000).optional(),
+  action_items: z.array(z.string()).max(20).optional(),
+});
+
+export const updateMeeting = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => UpdateInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase
+      .from("meetings")
+      .update({
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.summary !== undefined && { summary: data.summary }),
+        ...(data.transcript !== undefined && { transcript: data.transcript }),
+        ...(data.action_items !== undefined && { action_items: data.action_items }),
+      })
+      .eq("id", data.id)
+      .eq("user_id", context.userId)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
 export const searchMeetings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ q: z.string().max(200) }).parse(input))
