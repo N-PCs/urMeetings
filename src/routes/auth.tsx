@@ -59,10 +59,7 @@ function AuthPage() {
   return (
     <div className="grid min-h-dvh place-items-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
-        <Link
-          to="/"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-bold no-underline"
-        >
+        <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm font-bold no-underline">
           <span className="grid h-9 w-9 place-items-center rounded-xl ink-border bg-yellow pop-sm">
             <span className="text-lg font-black">u</span>
           </span>
@@ -93,7 +90,9 @@ function AuthPage() {
               />
             </label>
             <label className="block">
-              <span className="mb-1 block text-xs font-bold uppercase tracking-wider">Password</span>
+              <span className="mb-1 block text-xs font-bold uppercase tracking-wider">
+                Password
+              </span>
               <input
                 type="password"
                 required

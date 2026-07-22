@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { useSession } from "@/hooks/use-session";
+import { useOverlayPreference } from "@/hooks/use-overlay-preference";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Video, Sparkles, Shield, LogOut } from "lucide-react";
+import { Mail, Video, Sparkles, Shield, LogOut, Monitor } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function SettingsPage() {
   const { user } = useSession();
+  const { isOverlay, setIsOverlay } = useOverlayPreference();
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -43,14 +45,40 @@ function SettingsPage() {
           </div>
         </section>
 
+        <section className="rounded-2xl ink-border bg-card p-5 pop">
+          <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
+            <Monitor className="h-4 w-4" /> Interface
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold">Use as floating overlay</p>
+              <p className="text-xs text-muted-foreground">
+                Show live transcription in a draggable, resizable window
+              </p>
+            </div>
+            <button
+              onClick={() => setIsOverlay(!isOverlay)}
+              className={`inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                isOverlay ? "bg-violet" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`h-5 w-5 rounded-full bg-white transition-transform ${
+                  isOverlay ? "translate-x-6" : "translate-x-0.5"
+                }`}
+              />
+            </button>
+          </div>
+        </section>
+
         <section className="rounded-2xl ink-border bg-mint p-5 pop">
           <div className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
             <Sparkles className="h-4 w-4" /> AI
           </div>
           <p className="mt-2 text-sm">
             Summaries and Q&amp;A call Google Gemini directly using your own{" "}
-            <code className="rounded bg-background/60 px-1 font-mono text-xs">GEMINI_API_KEY</code>
-            . Free tier via Google AI Studio — no Lovable services in the loop.
+            <code className="rounded bg-background/60 px-1 font-mono text-xs">GEMINI_API_KEY</code>.
+            Free tier via Google AI Studio — no Lovable services in the loop.
           </p>
         </section>
 

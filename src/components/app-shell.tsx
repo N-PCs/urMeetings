@@ -31,10 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b-2 border-ink bg-background/95 backdrop-blur">
         <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6">
-          <Link
-            to="/"
-            className="flex min-w-0 items-center gap-2 no-underline"
-          >
+          <Link to="/" className="flex min-w-0 items-center gap-2 no-underline">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl ink-border bg-yellow pop-sm">
               <span className="text-lg font-black">u</span>
             </span>

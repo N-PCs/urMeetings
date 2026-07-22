@@ -81,7 +81,11 @@ function AskPage() {
               disabled={asking || !q.trim()}
               className="inline-flex h-12 shrink-0 items-center gap-2 rounded-xl ink-border bg-violet px-4 text-sm font-bold text-primary-foreground pop-sm disabled:opacity-60"
             >
-              {asking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {asking ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
               <span className="hidden sm:inline">Ask AI</span>
             </button>
           </form>

@@ -60,7 +60,13 @@ export function SquigglyArrow({ className = "" }: { className?: string }) {
  */
 export function UnderlineSquiggle({ className = "" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 200 12" className={className} fill="none" aria-hidden="true" preserveAspectRatio="none">
+    <svg
+      viewBox="0 0 200 12"
+      className={className}
+      fill="none"
+      aria-hidden="true"
+      preserveAspectRatio="none"
+    >
       <path
         d="M2 8 Q 25 2, 50 6 T 100 6 T 150 6 T 198 6"
         stroke="var(--violet)"

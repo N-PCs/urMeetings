@@ -6,9 +6,15 @@ export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
       { title: "Docs — urMeetings" },
-      { name: "description", content: "How urMeetings is built, which API keys you need, and how to self-host." },
+      {
+        name: "description",
+        content: "How urMeetings is built, which API keys you need, and how to self-host.",
+      },
       { property: "og:title", content: "Docs — urMeetings" },
-      { property: "og:description", content: "Architecture, API keys, and self-hosting docs for urMeetings." },
+      {
+        property: "og:description",
+        content: "Architecture, API keys, and self-hosting docs for urMeetings.",
+      },
     ],
   }),
   component: DocsPage,
@@ -74,7 +80,9 @@ function DocsPage() {
         <h1 className="mt-5 text-5xl font-black leading-[0.95] tracking-tight sm:text-6xl">
           The whole thing,
           <br />
-          <span className="inline-block rotate-[-1deg] rounded-2xl ink-border bg-pink px-3 pb-1 pop">on one page.</span>
+          <span className="inline-block rotate-[-1deg] rounded-2xl ink-border bg-pink px-3 pb-1 pop">
+            on one page.
+          </span>
         </h1>
 
         <section className="mt-12">
@@ -93,7 +101,9 @@ function DocsPage() {
               ["Lovable services", "None. Zero. Nada."],
             ].map(([k, v]) => (
               <div key={k} className="rounded-xl ink-border bg-card p-4 pop-sm">
-                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{k}</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  {k}
+                </div>
                 <div className="mt-1 font-bold">{v}</div>
               </div>
             ))}
@@ -105,20 +115,30 @@ function DocsPage() {
             <Key className="h-6 w-6" strokeWidth={2.5} /> API keys you need
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Short version: <span className="font-bold text-foreground">two free keys</span> — one from Google AI Studio, one from Supabase. Both take about 90 seconds to grab and neither asks for a credit card. Full walkthrough in{" "}
+            Short version: <span className="font-bold text-foreground">two free keys</span> — one
+            from Google AI Studio, one from Supabase. Both take about 90 seconds to grab and neither
+            asks for a credit card. Full walkthrough in{" "}
             <code className="rounded bg-card px-1 font-mono text-xs">SETUP.md</code>.
           </p>
           <div className="mt-6 space-y-4">
             {KEYS.map((k) => (
               <div key={k.name} className="rounded-2xl ink-border bg-card p-5 pop">
                 <div className="flex flex-wrap items-center gap-2">
-                  <code className="rounded-md ink-border bg-background px-2 py-1 text-xs font-bold">{k.name}</code>
-                  <span className={`rounded-full ink-border ${k.tone} px-2 py-0.5 text-[10px] font-black uppercase tracking-wider`}>
+                  <code className="rounded-md ink-border bg-background px-2 py-1 text-xs font-bold">
+                    {k.name}
+                  </code>
+                  <span
+                    className={`rounded-full ink-border ${k.tone} px-2 py-0.5 text-[10px] font-black uppercase tracking-wider`}
+                  >
                     {k.required}
                   </span>
                 </div>
-                <p className="mt-3 text-sm"><span className="font-bold">Where:</span> {k.where}</p>
-                <p className="mt-1 text-sm"><span className="font-bold">What:</span> {k.what}</p>
+                <p className="mt-3 text-sm">
+                  <span className="font-bold">Where:</span> {k.where}
+                </p>
+                <p className="mt-1 text-sm">
+                  <span className="font-bold">What:</span> {k.what}
+                </p>
               </div>
             ))}
           </div>
@@ -129,7 +149,8 @@ function DocsPage() {
             <Rocket className="h-6 w-6" strokeWidth={2.5} /> Deploy anywhere
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            One codebase, three targets. Pick whichever free tier you like — the app has no vendor lock-in.
+            One codebase, three targets. Pick whichever free tier you like — the app has no vendor
+            lock-in.
           </p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {DEPLOY.map((d) => (
@@ -145,17 +166,28 @@ function DocsPage() {
           <h2 className="flex items-center gap-2 text-2xl font-black">
             <Database className="h-6 w-6" strokeWidth={2.5} /> Data model
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">One table, protected by row-level security. Runs in your Supabase project.</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            One table, protected by row-level security. Runs in your Supabase project.
+          </p>
           <ul className="mt-4 space-y-2 text-sm">
             <li className="rounded-xl ink-border bg-card p-4 pop-sm">
-              <code className="font-bold">meetings</code> — id, user_id, title, source, transcript, summary, action_items (jsonb), duration_seconds, search (tsvector), started_at, created_at, updated_at
+              <code className="font-bold">meetings</code> — id, user_id, title, source, transcript,
+              summary, action_items (jsonb), duration_seconds, search (tsvector), started_at,
+              created_at, updated_at
             </li>
           </ul>
         </section>
 
         <footer className="mt-16 border-t-2 border-ink py-6 text-center text-xs text-muted-foreground">
           Built by N-PCs (Neel) ·{" "}
-          <a href="https://github.com/N-PCs" target="_blank" rel="noreferrer" className="font-bold text-foreground underline underline-offset-4">github.com/N-PCs</a>
+          <a
+            href="https://github.com/N-PCs"
+            target="_blank"
+            rel="noreferrer"
+            className="font-bold text-foreground underline underline-offset-4"
+          >
+            github.com/N-PCs
+          </a>
         </footer>
       </main>
     </div>

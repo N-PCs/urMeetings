@@ -6,7 +6,11 @@ export const Route = createFileRoute("/features")({
   head: () => ({
     meta: [
       { title: "Features — urMeetings" },
-      { name: "description", content: "Live transcription, instant AI summaries, action items, and cross-meeting Q&A. All free to start." },
+      {
+        name: "description",
+        content:
+          "Live transcription, instant AI summaries, action items, and cross-meeting Q&A. All free to start.",
+      },
       { property: "og:title", content: "Features — urMeetings" },
       { property: "og:description", content: "Everything urMeetings does for your meetings." },
     ],
@@ -15,14 +19,54 @@ export const Route = createFileRoute("/features")({
 });
 
 const FEATURES = [
-  { icon: Radio, bg: "bg-pink", title: "Live capture", body: "Browser-native Web Speech API. Nothing leaves your device until you save." },
-  { icon: StickyNote, bg: "bg-yellow", title: "Instant notes", body: "Google Gemini turns raw transcripts into tight summaries, decisions, and action items." },
-  { icon: Sparkles, bg: "bg-mint", title: "Ask anything", body: "Query across every meeting you've saved. Cites the meetings it used." },
-  { icon: Search, bg: "bg-violet", title: "Full-text search", body: "Postgres FTS across titles, summaries, and transcripts. Fast, no embeddings needed." },
-  { icon: Lock, bg: "bg-pink", title: "Your data, your rules", body: "Runs on your own Supabase project. Row-level security. Only you can read your meetings." },
-  { icon: Zap, bg: "bg-yellow", title: "Guest mode", body: "Try recording without signing up. Sign in only when you want to save." },
-  { icon: KeyRound, bg: "bg-mint", title: "Bring your own keys", body: "One Gemini key + one Supabase project. Both free tiers. No middleman, no surprise bills." },
-  { icon: Server, bg: "bg-violet", title: "Deploy anywhere", body: "Ships with a Dockerfile and vercel.json. Cloud Run, Vercel, Fly, your VPS — you pick." },
+  {
+    icon: Radio,
+    bg: "bg-pink",
+    title: "Live capture",
+    body: "Browser-native Web Speech API. Nothing leaves your device until you save.",
+  },
+  {
+    icon: StickyNote,
+    bg: "bg-yellow",
+    title: "Instant notes",
+    body: "Google Gemini turns raw transcripts into tight summaries, decisions, and action items.",
+  },
+  {
+    icon: Sparkles,
+    bg: "bg-mint",
+    title: "Ask anything",
+    body: "Query across every meeting you've saved. Cites the meetings it used.",
+  },
+  {
+    icon: Search,
+    bg: "bg-violet",
+    title: "Full-text search",
+    body: "Postgres FTS across titles, summaries, and transcripts. Fast, no embeddings needed.",
+  },
+  {
+    icon: Lock,
+    bg: "bg-pink",
+    title: "Your data, your rules",
+    body: "Runs on your own Supabase project. Row-level security. Only you can read your meetings.",
+  },
+  {
+    icon: Zap,
+    bg: "bg-yellow",
+    title: "Guest mode",
+    body: "Try recording without signing up. Sign in only when you want to save.",
+  },
+  {
+    icon: KeyRound,
+    bg: "bg-mint",
+    title: "Bring your own keys",
+    body: "One Gemini key + one Supabase project. Both free tiers. No middleman, no surprise bills.",
+  },
+  {
+    icon: Server,
+    bg: "bg-violet",
+    title: "Deploy anywhere",
+    body: "Ships with a Dockerfile and vercel.json. Cloud Run, Vercel, Fly, your VPS — you pick.",
+  },
 ];
 
 function FeaturesPage() {
@@ -37,7 +81,9 @@ function FeaturesPage() {
           <h1 className="mt-5 text-5xl font-black leading-[0.95] tracking-tight sm:text-6xl">
             Everything you need,
             <br />
-            <span className="inline-block rotate-[-1deg] rounded-2xl ink-border bg-yellow px-3 pb-1 pop">nothing you don't.</span>
+            <span className="inline-block rotate-[-1deg] rounded-2xl ink-border bg-yellow px-3 pb-1 pop">
+              nothing you don't.
+            </span>
           </h1>
           <p className="mt-6 text-lg text-muted-foreground">
             Built for humans who are tired of taking notes during meetings.
@@ -47,7 +93,9 @@ function FeaturesPage() {
         <section className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
             <div key={f.title} className="rounded-2xl ink-border bg-card p-5 pop">
-              <span className={`inline-grid h-11 w-11 place-items-center rounded-xl ink-border ${f.bg}`}>
+              <span
+                className={`inline-grid h-11 w-11 place-items-center rounded-xl ink-border ${f.bg}`}
+              >
                 <f.icon className="h-5 w-5" strokeWidth={2.5} />
               </span>
               <h3 className="mt-4 text-xl font-black">{f.title}</h3>

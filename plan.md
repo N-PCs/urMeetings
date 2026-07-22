@@ -13,6 +13,7 @@ Free-tier, Supabase + Vercel, Playful Geometric design, guest-mode onboarding.
 ## Design system: Playful Geometric (per your spec)
 
 Tokens go into `src/styles.css` under `@theme`:
+
 - Colors: off-white bg (`#FBF9F4`), slate-800 fg, violet/pink/yellow/mint accents
 - Fonts loaded via `<link>` in `__root.tsx` head: display + body per your spec
 - Chunky borders, hard offset shadows, rounded-2xl cards, bouncy easing `cubic-bezier(0.34,1.56,0.64,1)`
@@ -23,15 +24,15 @@ Composition: stable grid + wild decoration — no drifting into generic SaaS.
 
 ## Stack (all free at runtime)
 
-| Piece | Choice |
-|---|---|
-| Framework | TanStack Start + Tailwind v4 + shadcn/ui |
-| Auth + DB | **Supabase** (free tier) |
-| LLM | **Google Gemini API** direct (`gemini-2.5-flash`, free tier via AI Studio) |
-| Google Meet | Native Google OAuth 2.0, refresh token encrypted in Supabase |
-| Live transcription | Web Speech API (browser, free) |
-| Search | Postgres FTS (`tsvector`) — no embeddings |
-| Host | **Vercel Hobby** (retargeted from Cloudflare Workers) |
+| Piece              | Choice                                                                     |
+| ------------------ | -------------------------------------------------------------------------- |
+| Framework          | TanStack Start + Tailwind v4 + shadcn/ui                                   |
+| Auth + DB          | **Supabase** (free tier)                                                   |
+| LLM                | **Google Gemini API** direct (`gemini-2.5-flash`, free tier via AI Studio) |
+| Google Meet        | Native Google OAuth 2.0, refresh token encrypted in Supabase               |
+| Live transcription | Web Speech API (browser, free)                                             |
+| Search             | Postgres FTS (`tsvector`) — no embeddings                                  |
+| Host               | **Vercel Hobby** (retargeted from Cloudflare Workers)                      |
 
 Only cost = Lovable build credits (5/day free) to generate the code.
 

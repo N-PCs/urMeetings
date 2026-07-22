@@ -6,19 +6,45 @@ export const Route = createFileRoute("/tutorial")({
   head: () => ({
     meta: [
       { title: "Tutorial — urMeetings" },
-      { name: "description", content: "Get up and running with urMeetings in 4 steps: record, save, search, ask." },
+      {
+        name: "description",
+        content: "Get up and running with urMeetings in 4 steps: record, save, search, ask.",
+      },
       { property: "og:title", content: "Tutorial — urMeetings" },
-      { property: "og:description", content: "Four steps from zero to your first AI-summarized meeting." },
+      {
+        property: "og:description",
+        content: "Four steps from zero to your first AI-summarized meeting.",
+      },
     ],
   }),
   component: TutorialPage,
 });
 
 const STEPS = [
-  { icon: Mic, bg: "bg-pink", title: "1. Hit record", body: "Open /live, grant mic access, and start talking. Your browser transcribes locally — nothing uploads yet." },
-  { icon: Save, bg: "bg-yellow", title: "2. Save & summarize", body: "Sign in (email works), then hit Save. Google Gemini writes a title, a summary, and pulls out action items — called directly from your server with your own key." },
-  { icon: Search, bg: "bg-mint", title: "3. Search past notes", body: "Open /notes and search across every saved meeting with Postgres full-text search." },
-  { icon: Rocket, bg: "bg-violet", title: "4. Ask anything", body: "Head to /ask and ask questions like \"what did we decide about pricing last month?\" — citations included." },
+  {
+    icon: Mic,
+    bg: "bg-pink",
+    title: "1. Hit record",
+    body: "Open /live, grant mic access, and start talking. Your browser transcribes locally — nothing uploads yet.",
+  },
+  {
+    icon: Save,
+    bg: "bg-yellow",
+    title: "2. Save & summarize",
+    body: "Sign in (email works), then hit Save. Google Gemini writes a title, a summary, and pulls out action items — called directly from your server with your own key.",
+  },
+  {
+    icon: Search,
+    bg: "bg-mint",
+    title: "3. Search past notes",
+    body: "Open /notes and search across every saved meeting with Postgres full-text search.",
+  },
+  {
+    icon: Rocket,
+    bg: "bg-violet",
+    title: "4. Ask anything",
+    body: 'Head to /ask and ask questions like "what did we decide about pricing last month?" — citations included.',
+  },
 ];
 
 function TutorialPage() {
@@ -32,13 +58,17 @@ function TutorialPage() {
         <h1 className="mt-5 text-5xl font-black leading-[0.95] tracking-tight sm:text-6xl">
           Zero to summary
           <br />
-          <span className="inline-block rotate-[-1deg] rounded-2xl ink-border bg-mint px-3 pb-1 pop">in under a minute.</span>
+          <span className="inline-block rotate-[-1deg] rounded-2xl ink-border bg-mint px-3 pb-1 pop">
+            in under a minute.
+          </span>
         </h1>
 
         <ol className="mt-12 space-y-4">
           {STEPS.map((s) => (
             <li key={s.title} className="flex gap-4 rounded-2xl ink-border bg-card p-5 pop">
-              <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ink-border ${s.bg}`}>
+              <span
+                className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ink-border ${s.bg}`}
+              >
                 <s.icon className="h-5 w-5" strokeWidth={2.5} />
               </span>
               <div>
@@ -50,10 +80,16 @@ function TutorialPage() {
         </ol>
 
         <div className="mt-10 flex flex-wrap gap-3">
-          <Link to="/live" className="inline-flex h-12 items-center rounded-xl ink-border bg-violet px-5 text-base font-bold text-primary-foreground no-underline pop">
+          <Link
+            to="/live"
+            className="inline-flex h-12 items-center rounded-xl ink-border bg-violet px-5 text-base font-bold text-primary-foreground no-underline pop"
+          >
             Try it now
           </Link>
-          <Link to="/docs" className="inline-flex h-12 items-center rounded-xl ink-border bg-card px-5 text-base font-bold no-underline pop">
+          <Link
+            to="/docs"
+            className="inline-flex h-12 items-center rounded-xl ink-border bg-card px-5 text-base font-bold no-underline pop"
+          >
             Read the docs
           </Link>
         </div>
@@ -62,9 +98,18 @@ function TutorialPage() {
           <h3 className="text-lg font-black">Self-hosting?</h3>
           <p className="mt-2 text-sm">
             Grab a free Supabase project and a free Gemini key from{" "}
-            <a className="font-bold underline underline-offset-4" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">AI Studio</a>, drop them into{" "}
-            <code className="rounded bg-background/60 px-1 font-mono text-xs">.env.local</code>, and run{" "}
-            <code className="rounded bg-background/60 px-1 font-mono text-xs">bun run dev</code>. Full instructions in the repo's{" "}
+            <a
+              className="font-bold underline underline-offset-4"
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noreferrer"
+            >
+              AI Studio
+            </a>
+            , drop them into{" "}
+            <code className="rounded bg-background/60 px-1 font-mono text-xs">.env.local</code>, and
+            run <code className="rounded bg-background/60 px-1 font-mono text-xs">bun run dev</code>
+            . Full instructions in the repo's{" "}
             <code className="rounded bg-background/60 px-1 font-mono text-xs">SETUP.md</code>.
           </p>
         </div>

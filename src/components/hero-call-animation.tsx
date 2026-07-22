@@ -95,11 +95,21 @@ export function HeroCallAnimation() {
 
         {/* Controls */}
         <div className="mt-3 flex items-center justify-center gap-2">
-          <CtrlBtn><Mic className="h-4 w-4" strokeWidth={2.5} /></CtrlBtn>
-          <CtrlBtn><Video className="h-4 w-4" strokeWidth={2.5} /></CtrlBtn>
-          <CtrlBtn muted><MicOff className="h-4 w-4" strokeWidth={2.5} /></CtrlBtn>
+          <CtrlBtn>
+            <Mic className="h-4 w-4" strokeWidth={2.5} />
+          </CtrlBtn>
+          <CtrlBtn>
+            <Video className="h-4 w-4" strokeWidth={2.5} />
+          </CtrlBtn>
+          <CtrlBtn muted>
+            <MicOff className="h-4 w-4" strokeWidth={2.5} />
+          </CtrlBtn>
           <span className="mx-1 h-6 w-px bg-ink/30" />
-          <button type="button" tabIndex={-1} className="grid h-9 w-14 place-items-center rounded-full ink-border bg-destructive text-destructive-foreground pop-sm">
+          <button
+            type="button"
+            tabIndex={-1}
+            className="grid h-9 w-14 place-items-center rounded-full ink-border bg-destructive text-destructive-foreground pop-sm"
+          >
             <PhoneOff className="h-4 w-4" strokeWidth={2.5} />
           </button>
         </div>
@@ -211,8 +221,24 @@ function PersonTile({
           strokeLinejoin="round"
         />
         {/* Ears */}
-        <ellipse cx="35" cy="36" rx="2.8" ry="4" fill={skin} stroke="var(--ink)" strokeWidth="1.8" />
-        <ellipse cx="65" cy="36" rx="2.8" ry="4" fill={skin} stroke="var(--ink)" strokeWidth="1.8" />
+        <ellipse
+          cx="35"
+          cy="36"
+          rx="2.8"
+          ry="4"
+          fill={skin}
+          stroke="var(--ink)"
+          strokeWidth="1.8"
+        />
+        <ellipse
+          cx="65"
+          cy="36"
+          rx="2.8"
+          ry="4"
+          fill={skin}
+          stroke="var(--ink)"
+          strokeWidth="1.8"
+        />
         {/* Head */}
         <path
           d="M35 34 C 35 22, 65 22, 65 34 L 65 40 C 65 50, 58 55, 50 55 C 42 55, 35 50, 35 40 Z"
@@ -233,8 +259,20 @@ function PersonTile({
         <path d="M34 32 L 34 40" stroke={hair} strokeWidth="3" strokeLinecap="round" />
         <path d="M66 32 L 66 40" stroke={hair} strokeWidth="3" strokeLinecap="round" />
         {/* Eyebrows */}
-        <path d="M41 32 Q 44 30 47 32" stroke="var(--ink)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-        <path d="M53 32 Q 56 30 59 32" stroke="var(--ink)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        <path
+          d="M41 32 Q 44 30 47 32"
+          stroke="var(--ink)"
+          strokeWidth="1.6"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <path
+          d="M53 32 Q 56 30 59 32"
+          stroke="var(--ink)"
+          strokeWidth="1.6"
+          fill="none"
+          strokeLinecap="round"
+        />
         {/* Eyes with sparkle */}
         <g>
           <ellipse cx="44" cy="36.5" rx="1.9" ry="2.2" fill="var(--ink)" />
@@ -245,10 +283,22 @@ function PersonTile({
             <>
               {/* Slow blink */}
               <rect x="42" y="35" width="4" height="0" fill={skin}>
-                <animate attributeName="height" values="0;0;3;0" keyTimes="0;0.9;0.95;1" dur="4s" repeatCount="indefinite" />
+                <animate
+                  attributeName="height"
+                  values="0;0;3;0"
+                  keyTimes="0;0.9;0.95;1"
+                  dur="4s"
+                  repeatCount="indefinite"
+                />
               </rect>
               <rect x="54" y="35" width="4" height="0" fill={skin}>
-                <animate attributeName="height" values="0;0;3;0" keyTimes="0;0.9;0.95;1" dur="4s" repeatCount="indefinite" />
+                <animate
+                  attributeName="height"
+                  values="0;0;3;0"
+                  keyTimes="0;0.9;0.95;1"
+                  dur="4s"
+                  repeatCount="indefinite"
+                />
               </rect>
             </>
           )}
@@ -257,23 +307,73 @@ function PersonTile({
         <circle cx="41" cy="42" r="2.2" fill="#ff6b8a" opacity="0.35" />
         <circle cx="59" cy="42" r="2.2" fill="#ff6b8a" opacity="0.35" />
         {/* Nose */}
-        <path d="M50 38 L 48.5 43 Q 50 44 51.5 43" stroke="var(--ink)" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M50 38 L 48.5 43 Q 50 44 51.5 43"
+          stroke="var(--ink)"
+          strokeWidth="1.4"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
         {/* Mouth */}
         {speaking ? (
           <g>
-            <ellipse cx="50" cy="47" rx="3.2" ry="1.2" fill="#4a1721" stroke="var(--ink)" strokeWidth="1.4">
-              <animate attributeName="ry" values="0.5;2.2;0.9;2;0.6" dur="0.8s" repeatCount="indefinite" />
+            <ellipse
+              cx="50"
+              cy="47"
+              rx="3.2"
+              ry="1.2"
+              fill="#4a1721"
+              stroke="var(--ink)"
+              strokeWidth="1.4"
+            >
+              <animate
+                attributeName="ry"
+                values="0.5;2.2;0.9;2;0.6"
+                dur="0.8s"
+                repeatCount="indefinite"
+              />
             </ellipse>
             {/* teeth line */}
             <line x1="47" y1="47" x2="53" y2="47" stroke="#fff" strokeWidth="0.6" />
           </g>
         ) : (
-          <path d="M46 47 Q 50 50 54 47" stroke="var(--ink)" strokeWidth="1.7" fill="none" strokeLinecap="round" />
+          <path
+            d="M46 47 Q 50 50 54 47"
+            stroke="var(--ink)"
+            strokeWidth="1.7"
+            fill="none"
+            strokeLinecap="round"
+          />
         )}
         {/* Headphones — arch + earcups */}
-        <path d="M30 32 C 30 18, 70 18, 70 32" stroke="var(--ink)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-        <rect x="26.5" y="32" width="7" height="9" rx="2.2" fill="var(--violet)" stroke="var(--ink)" strokeWidth="1.8" />
-        <rect x="66.5" y="32" width="7" height="9" rx="2.2" fill="var(--violet)" stroke="var(--ink)" strokeWidth="1.8" />
+        <path
+          d="M30 32 C 30 18, 70 18, 70 32"
+          stroke="var(--ink)"
+          strokeWidth="2.4"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <rect
+          x="26.5"
+          y="32"
+          width="7"
+          height="9"
+          rx="2.2"
+          fill="var(--violet)"
+          stroke="var(--ink)"
+          strokeWidth="1.8"
+        />
+        <rect
+          x="66.5"
+          y="32"
+          width="7"
+          height="9"
+          rx="2.2"
+          fill="var(--violet)"
+          stroke="var(--ink)"
+          strokeWidth="1.8"
+        />
         <circle cx="30" cy="36.5" r="0.9" fill="var(--yellow)" />
         <circle cx="70" cy="36.5" r="0.9" fill="var(--yellow)" />
       </svg>

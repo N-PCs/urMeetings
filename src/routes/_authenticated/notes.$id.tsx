@@ -21,7 +21,11 @@ function MeetingDetail() {
   const qc = useQueryClient();
   const [deleting, setDeleting] = useState(false);
 
-  const { data: meeting, isLoading, error } = useQuery({
+  const {
+    data: meeting,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["meeting", id],
     queryFn: () => fetchOne({ data: { id } }),
   });
@@ -63,9 +67,7 @@ function MeetingDetail() {
         <article className="mt-4 space-y-5">
           <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
             <div className="min-w-0">
-              <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
-                {meeting.title}
-              </h1>
+              <h1 className="text-3xl font-black tracking-tight sm:text-4xl">{meeting.title}</h1>
               <p className="mt-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 {new Date(meeting.started_at).toLocaleString()} · {meeting.source}
                 {meeting.duration_seconds

@@ -15,10 +15,7 @@ export function Marquee({
 }) {
   return (
     <div className={`relative overflow-hidden ink-border bg-card py-3 ${className}`}>
-      <div
-        className="flex w-max gap-6"
-        style={{ animation: `marquee ${speed}s linear infinite` }}
-      >
+      <div className="flex w-max gap-6" style={{ animation: `marquee ${speed}s linear infinite` }}>
         {[0, 1].map((k) => (
           <div key={k} className="flex shrink-0 items-center gap-6 pr-6">
             {items.map((it, i) => (

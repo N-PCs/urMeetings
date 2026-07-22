@@ -5,7 +5,12 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const SaveInput = z.object({
   transcript: z.string().min(1).max(200000),
   source: z.enum(["live", "manual"]).default("live"),
-  durationSeconds: z.number().int().min(0).max(60 * 60 * 24).optional(),
+  durationSeconds: z
+    .number()
+    .int()
+    .min(0)
+    .max(60 * 60 * 24)
+    .optional(),
   title: z.string().max(200).optional(),
 });
 
@@ -37,16 +42,13 @@ async function callLovableAI(messages: LovableAIMessage[]): Promise<string> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents,
-      ...(systemText
-        ? { system_instruction: { parts: [{ text: systemText }] } }
-        : {}),
+      ...(systemText ? { system_instruction: { parts: [{ text: systemText }] } } : {}),
       generationConfig: { temperature: 0.4 },
     }),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    if (res.status === 429)
-      throw new Error("Gemini rate limit hit. Wait a minute and try again.");
+    if (res.status === 429) throw new Error("Gemini rate limit hit. Wait a minute and try again.");
     if (res.status === 403)
       throw new Error("Gemini rejected the request (403). Check GEMINI_API_KEY.");
     throw new Error(`Gemini request failed (${res.status}): ${text.slice(0, 200)}`);
@@ -54,15 +56,16 @@ async function callLovableAI(messages: LovableAIMessage[]): Promise<string> {
   const data = (await res.json()) as {
     candidates?: { content?: { parts?: { text?: string }[] } }[];
   };
-  return (
-    data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? ""
-  );
+  return data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
 }
 
 function extractJSON<T = unknown>(raw: string): T | null {
   if (!raw) return null;
   // Strip ```json fences if present.
-  const cleaned = raw.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
+  const cleaned = raw
+    .replace(/```json\s*/gi, "")
+    .replace(/```/g, "")
+    .trim();
   try {
     return JSON.parse(cleaned) as T;
   } catch {
@@ -154,7 +157,9 @@ export const getMeeting = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("meetings")
-      .select("id,user_id,title,source,transcript,summary,action_items,duration_seconds,started_at,created_at,updated_at")
+      .select(
+        "id,user_id,title,source,transcript,summary,action_items,duration_seconds,started_at,created_at,updated_at",
+      )
       .eq("id", data.id)
       .maybeSingle();
     if (error) throw new Error(error.message);
