@@ -244,6 +244,7 @@ export const listMeetings = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("meetings")
       .select("id,title,source,summary,action_items,duration_seconds,started_at,created_at")
+      .eq("user_id", context.userId)
       .order("started_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
@@ -260,6 +261,7 @@ export const getMeeting = createServerFn({ method: "GET" })
         "id,user_id,title,source,transcript,summary,action_items,duration_seconds,started_at,created_at,updated_at",
       )
       .eq("id", data.id)
+      .eq("user_id", context.userId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     return row;
@@ -269,7 +271,11 @@ export const deleteMeeting = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("meetings").delete().eq("id", data.id);
+    const { error } = await context.supabase
+      .from("meetings")
+      .delete()
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -311,6 +317,7 @@ export const searchMeetings = createServerFn({ method: "POST" })
       const { data: rows } = await context.supabase
         .from("meetings")
         .select("id,title,summary,started_at")
+        .eq("user_id", context.userId)
         .order("started_at", { ascending: false })
         .limit(50);
       return rows ?? [];
@@ -321,6 +328,7 @@ export const searchMeetings = createServerFn({ method: "POST" })
     const { data: rows, error } = await context.supabase
       .from("meetings")
       .select("id,title,summary,started_at")
+      .eq("user_id", context.userId)
       .or(`title.ilike.${like},summary.ilike.${like},transcript.ilike.${like}`)
       .order("started_at", { ascending: false })
       .limit(50);
@@ -338,6 +346,7 @@ export const askMeetingNotes = createServerFn({ method: "POST" })
     const { data: meetings, error } = await context.supabase
       .from("meetings")
       .select("id,title,summary,action_items,started_at")
+      .eq("user_id", context.userId)
       .order("started_at", { ascending: false })
       .limit(30);
     if (error) throw new Error(error.message);
