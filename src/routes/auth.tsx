@@ -149,6 +149,11 @@ function AuthPage() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onInput={(e) => setEmail((e.target as HTMLInputElement).value)}
+                    onAnimationStart={(e) => {
+                      const v = (e.target as HTMLInputElement).value;
+                      if (v) setEmail(v);
+                    }}
                     className="h-11 w-full rounded-xl ink-border bg-background px-3 text-sm font-medium outline-none placeholder:text-muted-foreground focus:pop-sm"
                     placeholder="you@work.com"
                   />
@@ -166,6 +171,11 @@ function AuthPage() {
                       autoComplete={mode === "signin" ? "current-password" : "new-password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onInput={(e) => setPassword((e.target as HTMLInputElement).value)}
+                      onAnimationStart={(e) => {
+                        const v = (e.target as HTMLInputElement).value;
+                        if (v) setPassword(v);
+                      }}
                       className="h-11 w-full rounded-xl ink-border bg-background px-3 text-sm font-medium outline-none focus:pop-sm"
                       placeholder="At least 6 characters"
                     />
