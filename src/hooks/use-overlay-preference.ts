@@ -37,6 +37,21 @@ export function useOverlayPreference() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          setState((prev) => ({ ...prev, ...parsed }));
+        } catch (err) {
+          console.error("Error syncing overlay state across tabs:", err);
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   const setIsOverlay = (value: boolean | ((prev: boolean) => boolean)) => {
     setState((prev) => ({
       ...prev,

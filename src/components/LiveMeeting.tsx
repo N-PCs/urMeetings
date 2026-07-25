@@ -1,104 +1,43 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Mic, Square, Save, Trash2, Loader2, AlertCircle, Video, VideoOff } from "lucide-react";
-import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { Mic, Square, Save, Trash2, Loader2, AlertCircle, Video, VideoOff, Radio, Sparkles } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { useServerFn } from "@tanstack/react-start";
 import { saveMeeting } from "@/lib/meetings.functions";
 import { toast } from "sonner";
+import { useMeetingListener } from "@/hooks/use-meeting-listener";
 
 export function LiveMeeting() {
-  const speech = useSpeechRecognition();
+  const meetingListener = useMeetingListener();
   const { isAuthenticated } = useSession();
   const [saving, setSaving] = useState(false);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
-  const [screenRecording, setScreenRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const save = useServerFn(saveMeeting);
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!speech.listening) return;
+    if (!meetingListener.isListening) return;
     if (!startedAt) setStartedAt(Date.now());
     const t = setInterval(() => setElapsed(Date.now() - (startedAt ?? Date.now())), 1000);
     return () => clearInterval(t);
-  }, [speech.listening, startedAt]);
+  }, [meetingListener.isListening, startedAt]);
+
+  const fullText = useMemo(() => {
+    return meetingListener.transcriptLines
+      .map((l) => `${l.speakerName}: ${l.text}`)
+      .join("\n");
+  }, [meetingListener.transcriptLines]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [speech.finalTranscript, speech.interimTranscript]);
+  }, [fullText, meetingListener.interimText]);
 
   const wordCount = useMemo(
-    () => speech.finalTranscript.trim().split(/\s+/).filter(Boolean).length,
-    [speech.finalTranscript],
+    () => fullText.trim().split(/\s+/).filter(Boolean).length,
+    [fullText],
   );
-
-  function handleToggle() {
-    if (speech.listening) {
-      speech.stop();
-    } else {
-      if (!speech.finalTranscript) setStartedAt(Date.now());
-      speech.start();
-    }
-  }
-
-  async function handleScreenToggle() {
-    if (screenRecording) {
-      mediaRecorder?.stop();
-      setScreenRecording(false);
-    } else {
-      try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-          audio: true,
-        });
-        const recorder = new MediaRecorder(stream);
-        const chunks: Blob[] = [];
-
-        recorder.ondataavailable = (event) => {
-          if (event.data.size > 0) chunks.push(event.data);
-        };
-
-        recorder.onstop = () => {
-          const blob = new Blob(chunks, { type: "video/webm" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.style.display = "none";
-          a.href = url;
-          a.download = `meeting-recording-${Date.now()}.webm`;
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }, 100);
-          stream.getTracks().forEach((track) => track.stop());
-        };
-
-        recorder.start();
-        setMediaRecorder(recorder);
-        setScreenRecording(true);
-        toast.success("Screen recording started!");
-      } catch (err) {
-        toast.error("Failed to start screen recording. Please grant screen sharing permissions.");
-        console.error(err);
-      }
-    }
-  }
-
-  function handleClear() {
-    if (!confirm("Clear this transcript?")) return;
-    speech.stop();
-    speech.reset();
-    setStartedAt(null);
-    setElapsed(0);
-    if (screenRecording) {
-      mediaRecorder?.stop();
-      setScreenRecording(false);
-    }
-  }
 
   async function handleSave() {
     if (!isAuthenticated) {
@@ -106,25 +45,16 @@ export function LiveMeeting() {
       navigate({ to: "/auth" });
       return;
     }
-    const transcript = speech.finalTranscript.trim();
-    if (!transcript) {
+    if (!fullText.trim()) {
       toast.error("Nothing to save yet.");
       return;
     }
     setSaving(true);
     try {
-      speech.stop();
-      if (screenRecording) {
-        mediaRecorder?.stop();
-        setScreenRecording(false);
+      const saved = await meetingListener.stopOverhearing();
+      if (saved) {
+        navigate({ to: "/notes/$id", params: { id: saved.id } });
       }
-      const durationSeconds = startedAt ? Math.round((Date.now() - startedAt) / 1000) : undefined;
-      const result = await save({ data: { transcript, source: "live", durationSeconds } });
-      toast.success(`Saved: ${result.title}`);
-      speech.reset();
-      setStartedAt(null);
-      setElapsed(0);
-      navigate({ to: "/notes/$id", params: { id: result.id } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -132,108 +62,105 @@ export function LiveMeeting() {
     }
   }
 
+  function handleClear() {
+    if (!confirm("Clear this transcript?")) return;
+    meetingListener.stopOverhearing();
+    setStartedAt(null);
+    setElapsed(0);
+  }
+
   return (
     <div className="space-y-4 p-4 h-full flex flex-col">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
-        <h2 className="truncate text-xl font-black tracking-tight">Live meeting</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="truncate text-xl font-black tracking-tight">Live meeting</h2>
+          {meetingListener.isScreenRecording && (
+            <span className="flex items-center gap-1 rounded-full bg-rose-500/20 px-2.5 py-0.5 text-xs font-black text-rose-600 animate-pulse">
+              <Video className="h-3 w-3" /> Video Recording
+            </span>
+          )}
+        </div>
         <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-muted-foreground">
           {formatTime(Math.floor(elapsed / 1000))} · {wordCount} words
         </span>
       </div>
 
-      {!speech.supported && (
-        <div className="flex items-start gap-3 rounded-xl ink-border bg-yellow p-4 pop-sm">
-          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-          <div className="text-sm">
-            <p className="font-bold">Live transcription isn't supported in this browser</p>
-            <p className="mt-1">Chrome, Edge, or Safari on desktop works best.</p>
-          </div>
-        </div>
-      )}
-
-      {speech.error && (
-        <div className="flex items-start gap-3 rounded-xl ink-border bg-pink p-4 pop-sm">
-          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-          <div className="text-sm">
-            <p className="font-bold">Mic error: {speech.error}</p>
-            <p className="mt-1">Grant microphone permission and try again.</p>
-          </div>
-        </div>
-      )}
-
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto rounded-2xl ink-border bg-card p-5 pop"
+        className="flex-1 overflow-y-auto rounded-2xl ink-border bg-card p-5 pop space-y-3"
       >
-        {!speech.finalTranscript && !speech.interimTranscript ? (
+        {!fullText && !meetingListener.interimText ? (
           <div className="grid h-full min-h-[150px] place-items-center text-center">
             <div>
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl ink-border bg-pink pop">
-                <Mic className="h-6 w-6" />
+              <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl ink-border bg-violet text-white pop">
+                <Radio className="h-6 w-6" />
               </div>
-              <p className="mt-3 font-bold text-sm">Tap record to start transcribing</p>
+              <p className="mt-3 font-bold text-sm">Choose Audio AI Bot or Video Screen Recording below</p>
             </div>
           </div>
         ) : (
-          <p className="whitespace-pre-wrap text-base leading-relaxed">
-            {speech.finalTranscript}
-            {speech.interimTranscript && (
-              <span className="text-muted-foreground">{speech.interimTranscript}</span>
+          <div className="space-y-2">
+            {meetingListener.transcriptLines.map((line) => (
+              <div key={line.id} className="text-sm">
+                <span className="font-bold text-violet-700">{line.speakerName} ({line.timestamp}):</span>{" "}
+                <span className="text-ink/80">{line.text}</span>
+              </div>
+            ))}
+            {meetingListener.interimText && (
+              <p className="text-sm italic text-muted-foreground">{meetingListener.interimText}</p>
             )}
-          </p>
+          </div>
         )}
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-[1.2fr_1.5fr_auto_auto]">
+      {/* Unified Action Bar */}
+      <div className="grid gap-2 sm:grid-cols-4">
+        {/* Audio AI Bot Button */}
         <button
-          onClick={handleToggle}
-          disabled={!speech.supported}
-          className={`flex h-12 items-center justify-center gap-2 rounded-xl ink-border text-sm font-bold pop disabled:opacity-60 ${
-            speech.listening ? "bg-pink" : "bg-violet text-primary-foreground"
+          onClick={meetingListener.isListening && !meetingListener.isScreenRecording ? meetingListener.stopOverhearing : meetingListener.startAudioBot}
+          className={`flex h-12 items-center justify-center gap-2 rounded-xl ink-border text-xs font-black pop ${
+            meetingListener.isListening && !meetingListener.isScreenRecording ? "bg-pink text-ink" : "bg-emerald-600 text-white"
           }`}
         >
-          {speech.listening ? (
+          <Radio className="h-4 w-4" />
+          {meetingListener.isListening && !meetingListener.isScreenRecording ? "Stop Audio Bot" : "Audio AI Bot"}
+        </button>
+
+        {/* Video Screen Recorder Button */}
+        <button
+          onClick={meetingListener.isScreenRecording ? meetingListener.stopOverhearing : meetingListener.startScreenRecording}
+          className={`flex h-12 items-center justify-center gap-2 rounded-xl ink-border text-xs font-black pop ${
+            meetingListener.isScreenRecording ? "bg-rose-600 text-white animate-pulse" : "bg-violet text-white"
+          }`}
+        >
+          {meetingListener.isScreenRecording ? (
             <>
-              <span className="h-2 w-2 rounded-full bg-ink blink" />
-              <Square className="h-4 w-4" /> Stop
+              <VideoOff className="h-4 w-4" /> Stop Video
             </>
           ) : (
             <>
-              <Mic className="h-4 w-4" /> Record
+              <Video className="h-4 w-4" /> Record Screen + Video
             </>
           )}
         </button>
-        <button
-          onClick={handleScreenToggle}
-          className={`flex h-12 items-center justify-center gap-2 rounded-xl ink-border text-sm font-bold pop disabled:opacity-60 ${
-            screenRecording ? "bg-red-500 text-white" : "bg-mint"
-          }`}
-        >
-          {screenRecording ? (
-            <>
-              <span className="h-2 w-2 rounded-full bg-white blink" />
-              <VideoOff className="h-4 w-4" /> Stop recording
-            </>
-          ) : (
-            <>
-              <Video className="h-4 w-4" /> Screen record
-            </>
-          )}
-        </button>
+
+        {/* Save & Summarize Button */}
         <button
           onClick={handleSave}
-          disabled={saving || !speech.finalTranscript.trim()}
-          className="flex h-12 items-center justify-center gap-2 rounded-xl ink-border bg-yellow px-4 text-sm font-black pop disabled:opacity-60"
+          disabled={saving || !fullText.trim()}
+          className="flex h-12 items-center justify-center gap-2 rounded-xl ink-border bg-yellow px-4 text-xs font-black pop disabled:opacity-60"
         >
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {saving ? "Summarizing…" : "Save"}
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          {saving ? "Summarizing…" : "Save AI Note"}
         </button>
+
+        {/* Clear Button */}
         <button
           onClick={handleClear}
-          disabled={!speech.finalTranscript && !speech.interimTranscript && !screenRecording}
-          className="flex h-12 items-center justify-center gap-2 rounded-xl ink-border bg-card px-3 text-sm font-bold pop disabled:opacity-60"
+          disabled={!fullText.trim() && !meetingListener.isListening}
+          className="flex h-12 items-center justify-center gap-2 rounded-xl ink-border bg-card px-3 text-xs font-bold pop disabled:opacity-60"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-4 w-4" /> Clear
         </button>
       </div>
 

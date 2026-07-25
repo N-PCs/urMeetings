@@ -17,6 +17,7 @@ import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as TutorialRouteImport } from './routes/tutorial'
 import { Route as AuthenticatedAskRouteImport } from './routes/_authenticated/ask'
+import { Route as AuthenticatedBotRouteImport } from './routes/_authenticated/bot'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedNotesIdRouteImport } from './routes/_authenticated/notes.$id'
@@ -60,6 +61,11 @@ const AuthenticatedAskRoute = AuthenticatedAskRouteImport.update({
   path: '/ask',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBotRoute = AuthenticatedBotRouteImport.update({
+  id: '/bot',
+  path: '/bot',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/live': typeof LiveRoute
   '/tutorial': typeof TutorialRoute
   '/ask': typeof AuthenticatedAskRoute
+  '/bot': typeof AuthenticatedBotRoute
   '/notes': typeof AuthenticatedNotesRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/notes/$id': typeof AuthenticatedNotesIdRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/live': typeof LiveRoute
   '/tutorial': typeof TutorialRoute
   '/ask': typeof AuthenticatedAskRoute
+  '/bot': typeof AuthenticatedBotRoute
   '/notes': typeof AuthenticatedNotesRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/notes/$id': typeof AuthenticatedNotesIdRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/live': typeof LiveRoute
   '/tutorial': typeof TutorialRoute
   '/_authenticated/ask': typeof AuthenticatedAskRoute
+  '/_authenticated/bot': typeof AuthenticatedBotRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/notes/$id': typeof AuthenticatedNotesIdRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/tutorial'
     | '/ask'
+    | '/bot'
     | '/notes'
     | '/settings'
     | '/notes/$id'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/tutorial'
     | '/ask'
+    | '/bot'
     | '/notes'
     | '/settings'
     | '/notes/$id'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/tutorial'
     | '/_authenticated/ask'
+    | '/_authenticated/bot'
     | '/_authenticated/notes'
     | '/_authenticated/settings'
     | '/_authenticated/notes/$id'
@@ -222,6 +234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAskRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bot': {
+      id: '/_authenticated/bot'
+      path: '/bot'
+      fullPath: '/bot'
+      preLoaderRoute: typeof AuthenticatedBotRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/notes': {
       id: '/_authenticated/notes'
       path: '/notes'
@@ -259,12 +278,14 @@ const AuthenticatedNotesRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAskRoute: typeof AuthenticatedAskRoute
+  AuthenticatedBotRoute: typeof AuthenticatedBotRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAskRoute: AuthenticatedAskRoute,
+  AuthenticatedBotRoute: AuthenticatedBotRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }

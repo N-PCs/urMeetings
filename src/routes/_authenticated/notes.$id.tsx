@@ -148,7 +148,7 @@ function MeetingDetail() {
                   : ""}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {editing ? (
                 <>
                   <button
@@ -175,6 +175,23 @@ function MeetingDetail() {
               ) : (
                 <>
                   <button
+                    onClick={() => {
+                      if (meeting) {
+                        const md = `# ${meeting.title}\n\n## Summary\n${meeting.summary || ""}\n\n## Transcript\n${meeting.transcript || ""}`;
+                        const blob = new Blob([md], { type: "text/markdown" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `${meeting.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-notes.md`;
+                        a.click();
+                        toast.success("Exported Markdown");
+                      }
+                    }}
+                    className="inline-flex h-10 shrink-0 items-center gap-1 rounded-xl ink-border bg-yellow px-3 text-sm font-bold pop-sm"
+                  >
+                    Download MD
+                  </button>
+                  <button
                     onClick={() => setEditing(true)}
                     className="inline-flex h-10 shrink-0 items-center gap-1 rounded-xl ink-border bg-mint px-3 text-sm font-bold pop-sm"
                   >
@@ -184,7 +201,7 @@ function MeetingDetail() {
                   <button
                     onClick={handleDelete}
                     disabled={deleting}
-                    className="inline-flex h-10 shrink-0 items-center gap-1 rounded-xl ink-border bg-card px-3 text-sm font-bold pop-sm disabled:opacity-60"
+                    className="inline-flex h-10 shrink-0 items-center gap-1 rounded-xl ink-border bg-red-100 text-red-800 px-3 text-sm font-bold pop-sm disabled:opacity-60"
                   >
                     {deleting ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

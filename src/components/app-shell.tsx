@@ -1,5 +1,5 @@
 import { Link, useLocation, useRouter } from "@tanstack/react-router";
-import { Radio, StickyNote, Sparkles, Settings, LogOut } from "lucide-react";
+import { Radio, StickyNote, Sparkles, Settings, LogOut, Bot } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ type NavItem = { to: string; label: string; icon: typeof Radio; color: string };
 
 const NAV: NavItem[] = [
   { to: "/live", label: "Live", icon: Radio, color: "bg-pink" },
+  { to: "/bot", label: "AI Bot", icon: Bot, color: "bg-mint" },
   { to: "/notes", label: "Notes", icon: StickyNote, color: "bg-yellow" },
   { to: "/ask", label: "Ask", icon: Sparkles, color: "bg-violet" },
   { to: "/settings", label: "Settings", icon: Settings, color: "bg-mint" },
@@ -123,7 +124,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink bg-background md:hidden"
         aria-label="Primary"
       >
-        <div className="mx-auto grid max-w-6xl grid-cols-4">
+        <div className="mx-auto grid max-w-6xl grid-cols-5">
           {NAV.map((item) => {
             const active = location.pathname.startsWith(item.to);
             return (
