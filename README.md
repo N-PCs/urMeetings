@@ -6,8 +6,6 @@
 
 Record meetings in your browser, get instant AI summaries and action items, and ask questions across everything you've said.
 
-<div align="center">
-
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![TanStack](https://img.shields.io/badge/TanStack_Start-1.168-EF4444?style=for-the-badge&logo=tanstack&logoColor=white)
@@ -17,6 +15,10 @@ Record meetings in your browser, get instant AI summaries and action items, and 
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![Resend](https://img.shields.io/badge/Resend-SMTP-000000?style=for-the-badge&logo=resend&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=for-the-badge&logo=vercel&logoColor=white)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/N-PCs/urMeetings)
+
+</div>
 
 ---
 
