@@ -57,8 +57,8 @@ function AuthPage() {
         return;
       }
 
-      const domEmail = getInputValue("email");
-      const domPassword = getInputValue("password");
+      const domEmail = getInputValue("email").trim();
+      const domPassword = getInputValue("password").trim();
 
       if (!domEmail || !domPassword) {
         throw new Error("Please fill in both email and password");
