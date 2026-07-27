@@ -1,6 +1,6 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, Settings } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -67,6 +67,13 @@ export function MarketingNav() {
         <div className="flex items-center gap-2">
           {isAuthenticated ? (
             <>
+              <Link
+                to="/settings"
+                className="inline-flex h-10 items-center gap-1.5 rounded-xl ink-border bg-card px-3 text-sm font-bold pop-sm"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Settings</span>
+              </Link>
               <Avatar className="h-9 w-9 border-2 border-ink">
                 {avatarUrl ? (
                   <AvatarImage src={avatarUrl} alt="User avatar" />
@@ -121,15 +128,24 @@ export function MarketingNav() {
               </Link>
             ))}
             {isAuthenticated ? (
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  signOut();
-                }}
-                className="rounded-lg ink-border bg-pink px-3 py-2 text-center text-sm font-bold text-primary-foreground no-underline"
-              >
-                Sign out
-              </button>
+              <>
+                <Link
+                  to="/settings"
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg ink-border bg-card px-3 py-2 text-center text-sm font-bold no-underline"
+                >
+                  Settings
+                </Link>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    signOut();
+                  }}
+                  className="rounded-lg ink-border bg-pink px-3 py-2 text-center text-sm font-bold text-primary-foreground no-underline"
+                >
+                  Sign out
+                </button>
+              </>
             ) : (
               <Link
                 to="/auth"

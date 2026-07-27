@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, Square, Save, Trash2, Loader2, AlertCircle, Video, VideoOff, Radio, Sparkles } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
@@ -166,7 +166,8 @@ export function LiveMeeting() {
 
       {!isAuthenticated && (
         <p className="text-center text-xs text-muted-foreground">
-          You're in guest mode. Recording works — sign in to save & search.
+          You're in guest mode. Recording works —{" "}
+          <Link to="/auth" className="font-bold underline underline-offset-4">sign in with Google</Link> to save & search.
         </p>
       )}
     </div>

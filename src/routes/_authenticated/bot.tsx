@@ -89,36 +89,37 @@ function MeetingBotPage() {
           </div>
         </div>
 
-        {/* Unified Dual-Mode Recorder & AI Bot Banner */}
-        <div className="rounded-3xl ink-border bg-emerald-100/70 p-6 pop flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="space-y-1">
+        {/* Unified Dual-Mode Recorder & AI Bot Banner — sticky so controls never disappear */}
+        <div className="sticky top-16 z-30 rounded-3xl ink-border bg-emerald-100/70 p-4 sm:p-6 pop flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+          <div className="space-y-0.5">
             <div className="flex items-center gap-2 text-xs font-black uppercase text-emerald-800 tracking-wider">
-              <Volume2 className="h-4 w-4" /> Unified Meeting Recorder & AI Bot
+              <Volume2 className="h-4 w-4" /> Recorder
             </div>
-            <h3 className="text-xl font-black text-emerald-950">Overhear Audio or Record Full Screen Video</h3>
-            <p className="text-xs text-emerald-900 font-medium">
-              Choose Audio-Only AI Bot mode for lightweight speech summaries, or Full Video Recording to save `.webm` videos with AI summaries!
-            </p>
+            {meetingListener.isListening || meetingListener.isScreenRecording ? (
+              <p className="text-sm font-bold text-red-600 animate-pulse">Recording active — stop below when done</p>
+            ) : (
+              <p className="text-xs text-emerald-900 font-medium">Audio-only or Full Video + AI</p>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               onClick={meetingListener.isListening && !meetingListener.isScreenRecording ? meetingListener.stopOverhearing : meetingListener.startAudioBot}
               className={`h-11 px-4 rounded-2xl ink-border font-black text-xs pop flex items-center gap-2 ${
-                meetingListener.isListening && !meetingListener.isScreenRecording ? "bg-red-500 text-white" : "bg-emerald-600 text-white"
+                meetingListener.isListening && !meetingListener.isScreenRecording ? "bg-red-500 text-white ring-2 ring-red-300" : "bg-emerald-600 text-white"
               }`}
             >
-              <Radio className="h-4 w-4 animate-pulse" />
-              {meetingListener.isListening && !meetingListener.isScreenRecording ? "Stop Audio Bot" : "Audio AI Bot Mode"}
+              <Radio className={`h-4 w-4 ${meetingListener.isListening && !meetingListener.isScreenRecording ? "animate-pulse" : ""}`} />
+              {meetingListener.isListening && !meetingListener.isScreenRecording ? "Stop Audio Bot" : "Audio AI Bot"}
             </button>
 
             <button
               onClick={meetingListener.isScreenRecording ? meetingListener.stopOverhearing : meetingListener.startScreenRecording}
               className={`h-11 px-4 rounded-2xl ink-border font-black text-xs pop flex items-center gap-2 ${
-                meetingListener.isScreenRecording ? "bg-red-500 text-white" : "bg-rose-600 text-white"
+                meetingListener.isScreenRecording ? "bg-red-500 text-white ring-2 ring-red-300" : "bg-rose-600 text-white"
               }`}
             >
-              <Video className="h-4 w-4" />
-              {meetingListener.isScreenRecording ? "Stop Video Recording" : "Record Video Screen + AI"}
+              <Video className={`h-4 w-4 ${meetingListener.isScreenRecording ? "animate-pulse" : ""}`} />
+              {meetingListener.isScreenRecording ? "Stop Video" : "Record Screen + AI"}
             </button>
           </div>
         </div>

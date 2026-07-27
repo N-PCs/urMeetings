@@ -56,7 +56,7 @@ function Landing() {
           <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] md:gap-8">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 rounded-full ink-border bg-yellow px-3 py-1 text-xs font-bold pop-sm">
-                <Zap className="h-3.5 w-3.5" /> 100% free · Self-hosted · No card needed
+                <Zap className="h-3.5 w-3.5" /> Sign in with Google · Self-hosted
               </div>
               <h1 className="mt-5 text-5xl font-black leading-[0.95] tracking-tight sm:text-6xl md:text-7xl">
                 Meeting notes that
@@ -107,7 +107,7 @@ function Landing() {
 
               <div className="mt-6 flex flex-wrap items-center gap-2">
                 <Sticker tone="mint" rotate={-4}>
-                  ★ Zero cost
+                  ★ AI-powered
                 </Sticker>
                 <Sticker tone="violet" rotate={3}>
                   Your keys
@@ -236,8 +236,7 @@ function Landing() {
                 <div>
                   <h2 className="text-3xl font-black sm:text-4xl">Ready in about 90 seconds.</h2>
                   <p className="mt-2 max-w-lg text-sm font-bold opacity-90">
-                    No signup wall, no free trial timer. Hit record and see what urMeetings does
-                    with your voice.
+                    Sign in with Google, hit record, and see what urMeetings does with your voice.
                   </p>
                 </div>
                 <Link

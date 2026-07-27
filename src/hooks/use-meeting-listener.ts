@@ -51,6 +51,7 @@ export function useMeetingListener() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const animFrameRef = useRef<number | null>(null);
+  const stopOverhearingRef = useRef<() => Promise<{ id: string } | null>>(() => Promise.resolve(null));
 
   const saveFn = useServerFn(saveMeeting);
 
@@ -99,7 +100,12 @@ export function useMeetingListener() {
       tabStreamRef.current = tabStream;
       setIsTabCaptured(true);
 
-      const trackLabel = tabStream.getVideoTracks()[0]?.label || "";
+      const videoTrack = tabStream.getVideoTracks()[0];
+      videoTrack.onended = () => {
+        stopOverhearingRef.current();
+      };
+
+      const trackLabel = videoTrack?.label || "";
       if (trackLabel.toLowerCase().includes("zoom")) {
         setMeetingDomain("zoom.us");
         setMeetingTitle("Zoom Meeting Recording");
@@ -350,6 +356,7 @@ export function useMeetingListener() {
     }
     return null;
   }, [transcriptLines, meetingTitle, saveFn]);
+  stopOverhearingRef.current = stopOverhearing;
 
   return {
     isListening,
