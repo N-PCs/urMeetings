@@ -143,9 +143,20 @@ function RootComponent() {
     return () => sub.subscription.unsubscribe();
   }, [queryClient, router]);
 
+  useEffect(() => {
+    const handler = (e: ErrorEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === "SCRIPT" && target.src && target.src.includes("/assets/")) {
+        console.warn("[urMeetings] Stale asset detected, reloading...");
+        window.location.reload();
+      }
+    };
+    window.addEventListener("error", handler, true);
+    return () => window.removeEventListener("error", handler, true);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster position="top-center" />
       <FloatingOverlay />
