@@ -23,6 +23,8 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const emailRef = useRef("");
+  const passwordRef = useRef("");
   const navigate = useNavigate();
   const router = useRouter();
   const { isAuthenticated, loading: sessionLoading } = useSession();
@@ -44,7 +46,7 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "reset") {
-        const resetEmail = getInputValue("email");
+        const resetEmail = emailRef.current || getInputValue("email");
         if (!resetEmail) {
           throw new Error("Enter your email above to receive a reset link");
         }
@@ -57,8 +59,8 @@ function AuthPage() {
         return;
       }
 
-      const domEmail = getInputValue("email").trim();
-      const domPassword = getInputValue("password").trim();
+      const domEmail = (emailRef.current || getInputValue("email")).trim();
+      const domPassword = (passwordRef.current || getInputValue("password")).trim();
 
       if (!domEmail || !domPassword) {
         throw new Error("Please fill in both email and password");
@@ -143,7 +145,7 @@ function AuthPage() {
                     : "Enter your email and we'll send you a reset link."}
               </p>
 
-              <form ref={formRef} method="POST" action="javascript:void(0)" onSubmit={handleSubmit} className="mt-6 space-y-3">
+              <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-3">
                 <label className="block">
                   <span className="mb-1 block text-xs font-bold uppercase tracking-wider">
                     Email
@@ -154,6 +156,7 @@ function AuthPage() {
                     required
                     autoComplete="email"
                     defaultValue=""
+                    onInput={(e) => { emailRef.current = (e.target as HTMLInputElement).value; }}
                     className="h-11 w-full rounded-xl ink-border bg-background px-3 text-sm font-medium outline-none placeholder:text-muted-foreground focus:pop-sm"
                     placeholder="you@work.com"
                   />
@@ -170,6 +173,7 @@ function AuthPage() {
                       minLength={6}
                       autoComplete={mode === "signin" ? "current-password" : "new-password"}
                       defaultValue=""
+                      onInput={(e) => { passwordRef.current = (e.target as HTMLInputElement).value; }}
                       className="h-11 w-full rounded-xl ink-border bg-background px-3 text-sm font-medium outline-none focus:pop-sm"
                       placeholder="At least 6 characters"
                     />
