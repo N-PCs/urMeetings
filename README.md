@@ -1,5 +1,9 @@
 <div align="center">
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/N-PCs/urMeetings)
+
+</div>
+
 # urMeetings
 
 ### AI meeting notes that actually help
