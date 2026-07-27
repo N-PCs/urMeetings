@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/hooks/use-session";
 import { toast } from "sonner";
 import { Loader2, MailCheck } from "lucide-react";
+import { autoConfirmSignup } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -67,19 +68,39 @@ function AuthPage() {
       }
 
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: domEmail,
           password: domPassword,
           options: { emailRedirectTo: `${window.location.origin}/notes` },
         });
         if (error) throw error;
+
+        if (!data.user) {
+          throw new Error("Could not create account. Try again.");
+        }
+
+        if (!data.session) {
+          await autoConfirmSignup({ data: { userId: data.user.id } });
+
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: domEmail,
+            password: domPassword,
+          });
+          if (signInError) throw signInError;
+        }
+
         toast.success("Account created! You're in.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: domEmail,
           password: domPassword,
         });
-        if (error) throw error;
+        if (error) {
+          if (error.message?.toLowerCase().includes("email not confirmed")) {
+            throw new Error("Please confirm your email first. Check your inbox for the confirmation link.");
+          }
+          throw error;
+        }
         toast.success("Welcome back");
       }
       router.invalidate();
