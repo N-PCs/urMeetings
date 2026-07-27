@@ -34,7 +34,7 @@ function AuthPage() {
   }, [isAuthenticated, sessionLoading, navigate]);
 
   function getInputValue(name: string): string {
-    const el = formRef.current?.elements.namedItem(name);
+    const el = document.getElementById(name);
     if (el instanceof HTMLInputElement) return el.value;
     return "";
   }
@@ -143,14 +143,14 @@ function AuthPage() {
                     : "Enter your email and we'll send you a reset link."}
               </p>
 
-              <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-3">
+              <form ref={formRef} method="POST" action="javascript:void(0)" onSubmit={handleSubmit} className="mt-6 space-y-3">
                 <label className="block">
                   <span className="mb-1 block text-xs font-bold uppercase tracking-wider">
                     Email
                   </span>
                   <input
                     type="email"
-                    name="email"
+                    id="email"
                     required
                     autoComplete="email"
                     defaultValue=""
@@ -165,7 +165,7 @@ function AuthPage() {
                     </span>
                     <input
                       type="password"
-                      name="password"
+                      id="password"
                       required
                       minLength={6}
                       autoComplete={mode === "signin" ? "current-password" : "new-password"}
