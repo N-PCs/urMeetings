@@ -51,8 +51,6 @@ function AuthPage() {
         return;
       }
 
-      // Read values directly from the DOM to work around Chrome autofill
-      // not triggering React's onChange on controlled inputs.
       const form = formRef.current;
       const domEmail =
         (form?.elements.namedItem("email") as HTMLInputElement)?.value ?? email;
@@ -82,6 +80,7 @@ function AuthPage() {
       router.invalidate();
       navigate({ to: "/notes" });
     } catch (err) {
+      console.error("Auth error:", err);
       toast.error(err instanceof Error ? err.message : "Auth failed");
     } finally {
       setLoading(false);
@@ -150,6 +149,7 @@ function AuthPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     onInput={(e) => setEmail((e.target as HTMLInputElement).value)}
+                    onBlur={(e) => setEmail(e.target.value)}
                     onAnimationStart={(e) => {
                       const v = (e.target as HTMLInputElement).value;
                       if (v) setEmail(v);
@@ -163,22 +163,23 @@ function AuthPage() {
                     <span className="mb-1 block text-xs font-bold uppercase tracking-wider">
                       Password
                     </span>
-                    <input
-                      type="password"
-                      name="password"
-                      required
-                      minLength={6}
-                      autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onInput={(e) => setPassword((e.target as HTMLInputElement).value)}
-                      onAnimationStart={(e) => {
-                        const v = (e.target as HTMLInputElement).value;
-                        if (v) setPassword(v);
-                      }}
-                      className="h-11 w-full rounded-xl ink-border bg-background px-3 text-sm font-medium outline-none focus:pop-sm"
-                      placeholder="At least 6 characters"
-                    />
+<input
+                       type="password"
+                       name="password"
+                       required
+                       minLength={6}
+                       autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                       value={password}
+                       onChange={(e) => setPassword(e.target.value)}
+                       onInput={(e) => setPassword((e.target as HTMLInputElement).value)}
+                       onBlur={(e) => setPassword(e.target.value)}
+                       onAnimationStart={(e) => {
+                         const v = (e.target as HTMLInputElement).value;
+                         if (v) setPassword(v);
+                       }}
+                       className="h-11 w-full rounded-xl ink-border bg-background px-3 text-sm font-medium outline-none focus:pop-sm"
+                       placeholder="At least 6 characters"
+                     />
                   </label>
                 )}
                 <button

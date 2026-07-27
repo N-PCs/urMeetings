@@ -10,6 +10,9 @@ import {
   MousePointer2,
   Quote,
   Monitor,
+  Bot,
+  Video,
+  CheckCircle2,
 } from "lucide-react";
 import { MarketingNav } from "@/components/marketing-nav";
 import { HeroCallAnimation } from "@/components/hero-call-animation";
@@ -64,9 +67,9 @@ function Landing() {
                 </span>
               </h1>
               <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-                Hit record. We transcribe in your browser, then turn it into a tight summary, action
-                items, and a Q&amp;A you can search across every meeting you've ever had. Runs on
-                your own Supabase + Google Gemini keys — free tiers, no middleman.
+                Drop a Google Meet, Zoom, or Teams link. Our AI bot joins the meeting,
+                records the conversation, and instantly turns it into a summary, action
+                items, and searchable notes — entirely inside urMeetings.
               </p>
 
               <div className="mt-6 flex items-center gap-3">
@@ -88,16 +91,17 @@ function Landing() {
 
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link
-                  to="/live"
+                  to="/bot"
                   className="inline-flex h-12 items-center gap-2 rounded-xl ink-border bg-violet px-5 text-base font-bold text-primary-foreground no-underline pop"
                 >
-                  <Radio className="h-4 w-4" /> Try it now — no signup
+                  <Bot className="h-4 w-4" /> Deploy AI Bot
                 </Link>
                 <Link
-                  to="/auth"
-                  className="inline-flex h-12 items-center rounded-xl ink-border bg-card px-5 text-base font-bold no-underline pop"
+                  to="/live"
+                  className="inline-flex h-12 items-center gap-2 rounded-xl ink-border bg-yellow px-5 text-base font-bold text-foreground no-underline pop"
+                  style={{ background: "white" }}
                 >
-                  Create free account
+                  <Radio className="h-4 w-4" /> Try recording
                 </Link>
               </div>
 
@@ -126,23 +130,23 @@ function Landing() {
             speed={40}
             items={[
               <span key="1">
-                <Radio className="mr-1 inline h-4 w-4" strokeWidth={2.5} /> Live browser
-                transcription
+                <Bot className="mr-1 inline h-4 w-4" strokeWidth={2.5} /> AI Bot joins meetings
               </span>,
               <span key="2">
-                <Cpu className="mr-1 inline h-4 w-4" strokeWidth={2.5} /> Gemini 2.5 Flash
+                <Video className="mr-1 inline h-4 w-4" strokeWidth={2.5} /> Google Meet · Zoom · Teams
               </span>,
               <span key="3">
-                <ShieldCheck className="mr-1 inline h-4 w-4" strokeWidth={2.5} /> Row-level security
+                <Cpu className="mr-1 inline h-4 w-4" strokeWidth={2.5} /> Gemini 2.5 Flash
               </span>,
               <span key="4">
-                <MessageSquare className="mr-1 inline h-4 w-4" strokeWidth={2.5} /> Ask across every
-                meeting
+                <ShieldCheck className="mr-1 inline h-4 w-4" strokeWidth={2.5} /> Row-level security
               </span>,
-              <span key="5">Self-hosted</span>,
-              <span key="6">Docker · Vercel · Cloud Run</span>,
-              <span key="7">Web Speech API</span>,
-              <span key="8">Postgres FTS</span>,
+              <span key="5">
+                <MessageSquare className="mr-1 inline h-4 w-4" strokeWidth={2.5} /> Ask across meetings
+              </span>,
+              <span key="6">Self-hosted</span>,
+              <span key="7">Docker · Vercel · Cloud Run</span>,
+              <span key="8">Full transcript + searchable notes</span>,
             ]}
           />
         </section>
@@ -155,7 +159,9 @@ function Landing() {
                 What you get
               </Sticker>
               <h2 className="mt-3 text-4xl font-black leading-tight sm:text-5xl">
-                Three tricks. <span className="text-muted-foreground">Zero fluff.</span>
+                Drop a link.
+                <br />
+                <span className="text-muted-foreground">The bot handles the rest.</span>
               </h2>
             </div>
             <SquigglyArrow className="hidden h-16 w-24 -rotate-12 md:block" />
@@ -164,22 +170,22 @@ function Landing() {
             {(
               [
                 {
-                  icon: Radio,
-                  bg: "bg-pink",
-                  title: "Live capture",
-                  body: "Your browser does the transcribing. Nothing uploaded until you say so.",
+                  icon: Bot,
+                  bg: "bg-violet",
+                  title: "AI Bot joins your meeting",
+                  body: "Paste any Meet, Zoom, or Teams link. Our bot joins as a participant and records everything automatically.",
                 },
                 {
                   icon: StickyNote,
                   bg: "bg-yellow",
-                  title: "Instant notes",
-                  body: "Summary, decisions, and action items in seconds — powered by Google Gemini (your own key).",
+                  title: "Instant meeting notes",
+                  body: "Summary, key decisions, action items, and a full transcript — generated the moment the meeting ends.",
                 },
                 {
                   icon: Sparkles,
                   bg: "bg-mint",
                   title: "Ask anything",
-                  body: '"What did we decide about pricing last month?" — urMeetings knows.',
+                  body: '"What did Rahul promise?" — urMeetings searches the transcript and answers instantly with citations.',
                 },
               ] as const
             ).map((f, i) => (
