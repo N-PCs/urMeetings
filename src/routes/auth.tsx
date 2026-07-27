@@ -9,7 +9,10 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — urMeetings" },
-      { name: "description", content: "Sign in or create your free urMeetings account." },
+      {
+        name: "description",
+        content: "Sign in or create your free urMeetings account.",
+      },
     ],
   }),
   component: AuthPage,
@@ -17,8 +20,6 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -32,13 +33,18 @@ function AuthPage() {
     }
   }, [isAuthenticated, sessionLoading, navigate]);
 
+  function getInputValue(name: string): string {
+    const el = formRef.current?.elements.namedItem(name);
+    if (el instanceof HTMLInputElement) return el.value;
+    return "";
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
       if (mode === "reset") {
-        const resetEmail =
-          email || (formRef.current?.elements.namedItem("email") as HTMLInputElement)?.value || "";
+        const resetEmail = getInputValue("email");
         if (!resetEmail) {
           throw new Error("Enter your email above to receive a reset link");
         }
@@ -51,11 +57,8 @@ function AuthPage() {
         return;
       }
 
-      const form = formRef.current;
-      const domEmail =
-        (form?.elements.namedItem("email") as HTMLInputElement)?.value ?? email;
-      const domPassword =
-        (form?.elements.namedItem("password") as HTMLInputElement)?.value ?? password;
+      const domEmail = getInputValue("email");
+      const domPassword = getInputValue("password");
 
       if (!domEmail || !domPassword) {
         throw new Error("Please fill in both email and password");
@@ -90,7 +93,10 @@ function AuthPage() {
   return (
     <div className="grid min-h-dvh place-items-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
-        <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm font-bold no-underline">
+        <Link
+          to="/"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-bold no-underline"
+        >
           <span className="grid h-9 w-9 place-items-center rounded-xl ink-border bg-yellow pop-sm">
             <span className="text-lg font-black">u</span>
           </span>
@@ -105,7 +111,8 @@ function AuthPage() {
               </div>
               <h1 className="text-2xl font-black tracking-tight">Check your email</h1>
               <p className="text-sm text-muted-foreground">
-                We sent a password reset link to <strong>{email}</strong>. Click the link in the
+                We sent a password reset link to{" "}
+                <strong>{getInputValue("email") || "your email"}</strong>. Click the link in the
                 email to set a new password, then come back here to sign in.
               </p>
               <button
@@ -146,14 +153,7 @@ function AuthPage() {
                     name="email"
                     required
                     autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onInput={(e) => setEmail((e.target as HTMLInputElement).value)}
-                    onBlur={(e) => setEmail(e.target.value)}
-                    onAnimationStart={(e) => {
-                      const v = (e.target as HTMLInputElement).value;
-                      if (v) setEmail(v);
-                    }}
+                    defaultValue=""
                     className="h-11 w-full rounded-xl ink-border bg-background px-3 text-sm font-medium outline-none placeholder:text-muted-foreground focus:pop-sm"
                     placeholder="you@work.com"
                   />
@@ -163,23 +163,16 @@ function AuthPage() {
                     <span className="mb-1 block text-xs font-bold uppercase tracking-wider">
                       Password
                     </span>
-<input
-                       type="password"
-                       name="password"
-                       required
-                       minLength={6}
-                       autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                       value={password}
-                       onChange={(e) => setPassword(e.target.value)}
-                       onInput={(e) => setPassword((e.target as HTMLInputElement).value)}
-                       onBlur={(e) => setPassword(e.target.value)}
-                       onAnimationStart={(e) => {
-                         const v = (e.target as HTMLInputElement).value;
-                         if (v) setPassword(v);
-                       }}
-                       className="h-11 w-full rounded-xl ink-border bg-background px-3 text-sm font-medium outline-none focus:pop-sm"
-                       placeholder="At least 6 characters"
-                     />
+                    <input
+                      type="password"
+                      name="password"
+                      required
+                      minLength={6}
+                      autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                      defaultValue=""
+                      className="h-11 w-full rounded-xl ink-border bg-background px-3 text-sm font-medium outline-none focus:pop-sm"
+                      placeholder="At least 6 characters"
+                    />
                   </label>
                 )}
                 <button
