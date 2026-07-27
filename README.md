@@ -10,17 +10,18 @@
 
 Record meetings in your browser, get instant AI summaries and action items, and ask questions across everything you've said.
 
-<div align="center">
+![React](https://img.shields.io/badge/React-19-333333?style=for-the-badge&logo=react&logoColor=black&labelColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-333333?style=for-the-badge&logo=typescript&logoColor=white&labelColor=3178C6)
+![TanStack](https://img.shields.io/badge/TanStack_Start-1.168-333333?style=for-the-badge&logo=tanstack&logoColor=white&labelColor=EF4444)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.2-333333?style=for-the-badge&logo=tailwindcss&logoColor=white&labelColor=06B6D4)
+![Vite](https://img.shields.io/badge/Vite-8.0-333333?style=for-the-badge&logo=vite&logoColor=white&labelColor=646CFF)
+![Supabase](https://img.shields.io/badge/Supabase-Auth_+_DB-333333?style=for-the-badge&logo=supabase&logoColor=white&labelColor=3ECF8E)
+![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-333333?style=for-the-badge&logo=google&logoColor=black&labelColor=white)
+![Resend](https://img.shields.io/badge/Resend-SMTP-333333?style=for-the-badge&logo=resend&logoColor=white&labelColor=orange)
+![Vercel](https://img.shields.io/badge/Vercel-Deploy-333333?style=for-the-badge&logo=vercel&logoColor=white&labelColor=000000)
 
-![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![TanStack](https://img.shields.io/badge/TanStack_Start-1.168-EF4444?style=for-the-badge&logo=tanstack&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.2-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-8.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-Auth_+_DB-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI-4285F4?style=for-the-badge&logo=google&logoColor=white)
-![Resend](https://img.shields.io/badge/Resend-SMTP-000000?style=for-the-badge&logo=resend&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=for-the-badge&logo=vercel&logoColor=white)
+
+</div>
 
 ---
 
