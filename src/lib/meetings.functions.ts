@@ -392,3 +392,109 @@ export const askMeetingNotes = createServerFn({ method: "POST" })
 
     return { answer: answer.trim(), citations };
   });
+
+const CreateRecallBotInput = z.object({
+  meetingUrl: z.string().min(5),
+  botName: z.string().optional().default("Np Bot"),
+});
+
+export const createRecallBot = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => CreateRecallBotInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const apiToken = process.env.RECALL_AI_API_TOKEN;
+    const baseUrl = process.env.RECALL_AI_BASE_URL || "https://us-east-1.recall.ai";
+    const webpageUrl = process.env.WEBPAGE_URL || "http://localhost:3001";
+
+    if (!apiToken || apiToken === "your_recall_token_here") {
+      throw new Error(
+        "RECALL_AI_API_TOKEN is not configured in .env.local. Please set a valid Recall AI token to deploy live bots."
+      );
+    }
+
+    const recallResponse = await fetch(`${baseUrl}/api/v1/bot`, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        meeting_url: data.meetingUrl,
+        bot_name: data.botName,
+        output_media: {
+          screenshare: {
+            kind: "webpage",
+            config: {
+              url: webpageUrl,
+            },
+          },
+        },
+        variant: {
+          zoom: "web_4_core",
+          google_meet: "web_4_core",
+          microsoft_teams: "web_4_core",
+        },
+        recording_config: {
+          transcript: {
+            provider: {
+              recallai_streaming: {
+                language_code: "auto",
+                mode: "prioritize_accuracy",
+              },
+            },
+          },
+        },
+      }),
+    });
+
+    if (!recallResponse.ok) {
+      const errorText = await recallResponse.text().catch(() => "");
+      throw new Error(`Recall AI error (${recallResponse.status}): ${errorText.slice(0, 200)}`);
+    }
+
+    const recallData = await recallResponse.json();
+    const botId = recallData.id;
+    const platform = recallData.meeting_url?.platform || "unknown";
+    const joinAt = recallData.join_at;
+
+    const { error: dbError } = await context.supabase
+      .from("bots")
+      .insert({
+        id: botId,
+        name: data.botName,
+        meeting_url: data.meetingUrl,
+        meeting_platform: platform,
+        bot_status: "creating",
+        joined_at: joinAt,
+        webpage_url: webpageUrl,
+        user_id: context.userId,
+      });
+
+    if (dbError) {
+      console.error("Supabase insert error for bot:", dbError);
+    }
+
+    return {
+      success: true,
+      bot_id: botId,
+      platform,
+      join_at: joinAt,
+      data: recallData,
+    };
+  });
+
+export const listRecallBots = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("bots")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("Could not list bots from Supabase (table might not exist yet):", error.message);
+      return [];
+    }
+    return data ?? [];
+  });
+
