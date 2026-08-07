@@ -27,8 +27,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AudioFileUpload } from "@/components/AudioFileUpload";
-import { useMeetingListener } from "@/hooks/use-meeting-listener";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/bot")({
   head: () => ({ meta: [{ title: "urBriefs AI Meeting Bot — urMeetings" }] }),
@@ -53,28 +52,19 @@ function MeetingBotPage() {
   // Form state
   const [meetingUrl, setMeetingUrl] = useState("");
   const [botName, setBotName] = useState("urBriefs");
-  const [useSimulation, setUseSimulation] = useState(false);
+  const [botName, setBotName] = useState("urBriefs");
 
   const [isJoining, setIsJoining] = useState(false);
   const [joinStep, setJoinStep] = useState<"idle" | "connecting" | "recording" | "done">("idle");
-  const [resultData, setResultData] = useState<{
-    id?: string;
-    title?: string;
-    platform?: string;
-    summary?: string;
-    action_items?: string[];
-  } | null>(null);
 
   // Dashboard state
   const [botsList, setBotsList] = useState<RecallBotItem[]>([]);
   const [loadingBots, setLoadingBots] = useState(false);
 
   const createRecallBotFn = useServerFn(createRecallBot);
-  const joinSimulatedBotFn = useServerFn(joinMeetingBot);
   const fetchBotsFn = useServerFn(listRecallBots);
 
   const navigate = useNavigate();
-  const meetingListener = useMeetingListener();
 
   useEffect(() => {
     if (activeTab === "dashboard") {
@@ -103,55 +93,25 @@ function MeetingBotPage() {
 
     setIsJoining(true);
     setJoinStep("connecting");
-    setResultData(null);
 
-    if (useSimulation) {
-      // Trigger local audio overhearing fallback / simulation
-      meetingListener.startOverhearing();
-      setTimeout(() => setJoinStep("recording"), 1500);
+    // Real Bot deployment
+    try {
+      const result = await createRecallBotFn({
+        data: {
+          meetingUrl: meetingUrl.trim(),
+          botName: botName.trim() || "urBriefs",
+        },
+      });
 
-      try {
-        const result = await joinSimulatedBotFn({
-          data: {
-            meetingUrl: meetingUrl.trim(),
-            botName: botName.trim() || "urBriefs",
-          },
-        });
-        setJoinStep("done");
-        setResultData(result);
-        setIsJoining(false);
-        toast.success(`Simulated urBriefs bot joined and generated summary!`);
-      } catch (err) {
-        setIsJoining(false);
-        setJoinStep("idle");
-        toast.error(err instanceof Error ? err.message : "Simulated bot failed");
-      }
-    } else {
-      // Real Recall AI Bot deployment
-      try {
-        const result = await createRecallBotFn({
-          data: {
-            meetingUrl: meetingUrl.trim(),
-            botName: botName.trim() || "urBriefs",
-          },
-        });
-
-        setJoinStep("done");
-        setIsJoining(false);
-        toast.success(`urBriefs bot deployed to meeting! Bot ID: ${result.bot_id}`);
-        setActiveTab("dashboard");
-      } catch (err) {
-        setIsJoining(false);
-        setJoinStep("idle");
-        const errMsg = err instanceof Error ? err.message : "Failed to deploy bot";
-        toast.error(errMsg);
-        
-        // If Recall token missing, offer simulation
-        if (errMsg.includes("RECALL_AI_API_TOKEN")) {
-          toast.info("Switching to simulation mode...");
-          setUseSimulation(true);
-        }
-      }
+      setJoinStep("done");
+      setIsJoining(false);
+      toast.success(`urBriefs bot deployed to meeting! Bot ID: ${result.bot_id}`);
+      setActiveTab("dashboard");
+    } catch (err) {
+      setIsJoining(false);
+      setJoinStep("idle");
+      const errMsg = err instanceof Error ? err.message : "Failed to deploy bot";
+      toast.error(errMsg);
     }
   }
 
@@ -227,39 +187,6 @@ function MeetingBotPage() {
           </div>
         </div>
 
-        {/* Sticky Unified Recorder Banner */}
-        <div className="sticky top-16 z-30 rounded-3xl ink-border bg-emerald-100/70 p-4 sm:p-6 pop flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg backdrop-blur-md">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2 text-xs font-black uppercase text-emerald-800 tracking-wider">
-              <Volume2 className="h-4 w-4" /> Local Audio & Screen Recorder
-            </div>
-            {meetingListener.isListening || meetingListener.isScreenRecording ? (
-              <p className="text-sm font-bold text-red-600 animate-pulse">Recording active — stop below when done</p>
-            ) : (
-              <p className="text-xs text-emerald-900 font-medium">Record tab audio or entire screen directly from your browser</p>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <button
-              onClick={meetingListener.isListening && !meetingListener.isScreenRecording ? meetingListener.stopOverhearing : meetingListener.startAudioBot}
-              className={`h-11 px-4 rounded-2xl ink-border font-black text-xs pop flex items-center gap-2 ${
-                meetingListener.isListening && !meetingListener.isScreenRecording ? "bg-red-500 text-white ring-2 ring-red-300" : "bg-emerald-600 text-white"
-              }`}
-            >
-              <Radio className={`h-4 w-4 ${meetingListener.isListening && !meetingListener.isScreenRecording ? "animate-pulse" : ""}`} />
-              {meetingListener.isListening && !meetingListener.isScreenRecording ? "Stop Audio Bot" : "Audio AI Bot"}
-            </button>
-
-            <button
-              onClick={meetingListener.isScreenRecording ? meetingListener.stopOverhearing : meetingListener.startScreenRecording}
-              className={`h-11 px-4 rounded-2xl ink-border font-black text-xs pop flex items-center gap-2 ${
-                meetingListener.isScreenRecording ? "bg-red-500 text-white ring-2 ring-red-300" : "bg-rose-600 text-white"
-              }`}
-            >
-              <Video className={`h-4 w-4 ${meetingListener.isScreenRecording ? "animate-pulse" : ""}`} />
-              {meetingListener.isScreenRecording ? "Stop Video" : "Record Screen + AI"}
-            </button>
-          </div>
         </div>
 
         {/* TAB 1: DEPLOY BOT */}
@@ -270,15 +197,6 @@ function MeetingBotPage() {
                 <h2 className="text-xl font-black flex items-center gap-2">
                   <Link2 className="h-5 w-5 text-violet" /> Deploy urBriefs Bot
                 </h2>
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={useSimulation}
-                    onChange={(e) => setUseSimulation(e.target.checked)}
-                    className="rounded ink-border text-violet focus:ring-violet"
-                  />
-                  Simulate Bot
-                </label>
               </div>
 
               <form onSubmit={handleDeployBot} className="space-y-4">
@@ -372,26 +290,6 @@ function MeetingBotPage() {
                   </li>
                 </ul>
               </div>
-
-              {/* Simulation Result Preview */}
-              {resultData && (
-                <div className="rounded-3xl ink-border bg-card p-6 pop space-y-3 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase text-emerald-700">Summary Ready</span>
-                    <span className="text-xs font-bold text-muted-foreground">{resultData.platform}</span>
-                  </div>
-                  <h4 className="text-base font-black">{resultData.title}</h4>
-                  <p className="text-xs line-clamp-3 text-ink/80">{resultData.summary}</p>
-                  {resultData.id && (
-                    <button
-                      onClick={() => navigate({ to: "/notes/$id", params: { id: resultData.id! } })}
-                      className="w-full h-10 flex items-center justify-center gap-1 rounded-xl ink-border bg-yellow text-xs font-black pop-sm"
-                    >
-                      View Full Notes <ArrowRight className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -468,11 +366,6 @@ function MeetingBotPage() {
             )}
           </div>
         )}
-
-        {/* Audio / Video File Transcriber Section */}
-        <section className="pt-6 border-t border-border">
-          <AudioFileUpload />
-        </section>
       </div>
     </AppShell>
   );

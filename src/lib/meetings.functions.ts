@@ -165,78 +165,6 @@ export const saveMeeting = createServerFn({ method: "POST" })
     return { id: row.id, ...summary };
   });
 
-const BotJoinInput = z.object({
-  meetingUrl: z.string().min(5),
-  botName: z.string().optional().default("urBriefs"),
-  meetingTopic: z.string().optional(),
-});
-
-export const joinMeetingBot = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => BotJoinInput.parse(input))
-  .handler(async ({ data, context }) => {
-    const url = data.meetingUrl.trim();
-    let platform = "Online Meeting";
-    if (url.includes("meet.google.com")) platform = "Google Meet";
-    else if (url.includes("zoom.us")) platform = "Zoom";
-    else if (url.includes("teams.microsoft.com")) platform = "MS Teams";
-    else if (url.includes("jitsi")) platform = "Jitsi Meet";
-    else if (url.includes("webex")) platform = "Webex";
-
-    let transcript = "";
-    try {
-      transcript = await callLovableAI([
-        {
-          role: "system",
-          content:
-            `You are simulating an AI Bot joining a ${platform} call link (${url}). ` +
-            "Generate a realistic, multi-speaker transcript of a 5-minute meeting discussion with speaker attribution. " +
-            "Include speaker names like 'Speaker 1 (Alice - Host)', 'Speaker 2 (Bob - Tech Lead)', 'Speaker 3 (Charlie - Product)'. " +
-            "Format lines like: '[00:01] Speaker 1 (Alice): Welcome team, let's review our updates...'\n" +
-            "Keep it realistic, engaging, and structured around key action items and decisions.",
-        },
-        {
-          role: "user",
-          content: `Meeting URL: ${url}\nTopic context: ${data.meetingTopic || "Sprint Planning & Strategy"}`,
-        },
-      ]);
-    } catch {
-      transcript =
-        `[00:01] Speaker 1 (Alice - Meeting Host): "Hello everyone, thank you for joining our ${platform} call via link."\n` +
-        `[00:15] Speaker 2 (Bob - Project Lead): "Great to be here! Let's address the action items and deliverables for this week."\n` +
-        `[00:45] Speaker 3 (Carol - Tech Lead): "I've reviewed the design specs and performance optimizations. The picture-in-picture functionality and AI summaries are coming along great."\n` +
-        `[01:30] Speaker 1 (Alice): "Awesome! Let's finalize the testing plan and deliver the summary to all stakeholders."`;
-    }
-
-    const summary = await summarizeTranscript(
-      transcript,
-      data.meetingTopic ? `${platform}: ${data.meetingTopic}` : undefined,
-    );
-
-    const { data: row, error } = await context.supabase
-      .from("meetings")
-      .insert({
-        user_id: context.userId,
-        title: summary.title,
-        source: "google_meet",
-        transcript: transcript,
-        summary: summary.summary,
-        action_items: summary.action_items,
-        duration_seconds: 300,
-      })
-      .select("id")
-      .single();
-
-    if (error) throw new Error(error.message);
-    return {
-      id: row.id,
-      title: summary.title,
-      platform,
-      summary: summary.summary,
-      action_items: summary.action_items,
-      transcript,
-    };
-  });
 
 export const listMeetings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -402,60 +330,48 @@ export const createRecallBot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => CreateRecallBotInput.parse(input))
   .handler(async ({ data, context }) => {
-    const apiToken = process.env.RECALL_AI_API_TOKEN;
-    const baseUrl = process.env.RECALL_AI_BASE_URL || "https://us-east-1.recall.ai";
-    const webpageUrl = process.env.WEBPAGE_URL || "http://localhost:3001";
+    const apiKey = process.env.MEETING_BAAS_API_KEY;
+    const baseUrl = process.env.MEETING_BAAS_BASE_URL || "https://api.meetingbaas.com";
+    const webpageUrl = process.env.WEBPAGE_URL || "http://localhost:3000";
 
-    if (!apiToken || apiToken === "your_recall_token_here") {
+    if (!apiKey) {
       throw new Error(
-        "RECALL_AI_API_TOKEN is not configured in .env.local. Please set a valid Recall AI token to deploy live bots."
+        "MEETING_BAAS_API_KEY is not configured in .env.local. Please set a valid Meeting Baas token."
       );
     }
 
-    const recallResponse = await fetch(`${baseUrl}/api/v1/bot`, {
+    const baasResponse = await fetch(`${baseUrl}/bots`, {
       method: "POST",
       headers: {
-        Authorization: `Token ${apiToken}`,
+        "x-meeting-baas-api-key": apiKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         meeting_url: data.meetingUrl,
         bot_name: data.botName,
-        output_media: {
-          screenshare: {
-            kind: "webpage",
-            config: {
-              url: webpageUrl,
-            },
-          },
-        },
-        variant: {
-          zoom: "web_4_core",
-          google_meet: "web_4_core",
-          microsoft_teams: "web_4_core",
-        },
-        recording_config: {
-          transcript: {
-            provider: {
-              recallai_streaming: {
-                language_code: "auto",
-                mode: "prioritize_accuracy",
-              },
-            },
-          },
-        },
+        speech_to_text: "Gladia",
+        webhook_url: `${webpageUrl}/api/webhook`,
       }),
     });
 
-    if (!recallResponse.ok) {
-      const errorText = await recallResponse.text().catch(() => "");
-      throw new Error(`Recall AI error (${recallResponse.status}): ${errorText.slice(0, 200)}`);
+    if (!baasResponse.ok) {
+      const errorText = await baasResponse.text().catch(() => "");
+      throw new Error(`Meeting Baas error (${baasResponse.status}): ${errorText.slice(0, 200)}`);
     }
 
-    const recallData = await recallResponse.json();
-    const botId = recallData.id;
-    const platform = recallData.meeting_url?.platform || "unknown";
-    const joinAt = recallData.join_at;
+    const baasData = await baasResponse.json();
+    const botId = baasData.bot_id || baasData.id;
+    
+    let platform = "unknown";
+    if (data.meetingUrl.includes("google.com") || data.meetingUrl.includes("meet.google")) {
+      platform = "google_meet";
+    } else if (data.meetingUrl.includes("zoom.us")) {
+      platform = "zoom";
+    } else if (data.meetingUrl.includes("teams")) {
+      platform = "microsoft_teams";
+    }
+
+    const joinAt = new Date().toISOString();
 
     const { error: dbError } = await context.supabase
       .from("bots")
