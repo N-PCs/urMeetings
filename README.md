@@ -28,7 +28,7 @@ Record meetings in your browser, get instant AI summaries and action items, and 
 | Feature | Description |
 |---------|-------------|
 | **Live Transcription** | Real-time speech-to-text using the browser's Web Speech API — no API key needed |
-| **urBriefs AI Bot** | Autonomous AI bot that joins Google Meet / Zoom / Teams / Webex calls, transcribes, and summarizes |
+| **urBrief AI Bot** | Autonomous AI bot that joins Google Meet / Zoom / Teams / Webex calls, transcribes, and summarizes |
 | **Screen + Audio Recording** | Record full screen video (`.webm`) or audio-only with AI-powered speaker diarization |
 | **AI Summaries** | Instant executive summaries with key decisions and action items via Google Gemini |
 | **Ask Your Notes** | Natural-language Q&A across all your saved meetings |
@@ -44,7 +44,7 @@ Record meetings in your browser, get instant AI summaries and action items, and 
 | Layer | Technology | Free Tier |
 |-------|-----------|-----------|
 | Framework | [TanStack Start](https://tanstack.com/start) + React 19 + Tailwind v4 | Yes |
-| AI Bot | **urBriefs** (Next.js 15, Recall.ai & Local Simulation) | Built-in |
+| AI Bot | **urBrief** (Next.js 15, Recall.ai & Local Simulation) | Built-in |
 | UI | [shadcn/ui](https://ui.shadcn.com) + Radix primitives | Yes |
 | Auth + Database | [Supabase](https://supabase.com) (Postgres, RLS, Auth) | 500 MB DB, 50k MAU |
 | AI | [Google Gemini](https://aistudio.google.com) (`gemini-2.5-flash`) | ~15 req/min |
@@ -93,26 +93,26 @@ flowchart TD
     style Server fill:#8B5CF6,color:#fff,stroke:#18181b
 ```
 
-### urBriefs AI Bot Flow
+### urBrief AI Bot Flow
 
 ```mermaid
 sequenceDiagram
     actor User
     participant App as urMeetings (TanStack Start)
-    participant Bot as urBriefs Bot Engine
+    participant Bot as urBrief Bot Engine
     participant Call as Google Meet / Zoom / Teams
     participant DB as Supabase DB
     participant Gemini as Google Gemini API
 
     User->>App: Paste Meeting Link (Google Meet / Zoom / Teams)
-    App->>Bot: Deploy urBriefs Bot (Live or Simulated)
+    App->>Bot: Deploy urBrief Bot (Live or Simulated)
     Bot->>Call: Join Call as Silent Participant
     Call-->>Bot: Stream Audio & Video
     Bot->>Bot: Record Media & Diarize Speakers
     Bot->>Gemini: Generate Executive Summary & Action Items
     Bot->>DB: Persist Meeting Brief & Transcript
     DB-->>App: Sync Meeting Brief to Dashboard
-    App-->>User: Present Complete urBriefs Summary
+    App-->>User: Present Complete urBrief Summary
 ```
 
 ### Auth Flow
@@ -256,7 +256,7 @@ Vercel will auto-deploy on every push to `main`.
 
 ```
 urMeetings/
-├── AI-Bot/                         # urBriefs standalone Next.js bot service
+├── AI-Bot/                         # urBrief standalone Next.js bot service
 │   ├── app/
 │   │   ├── api/create-bot/         # Bot initialization endpoint
 │   │   ├── api/webhook/            # Webhook listener for bot events
@@ -275,7 +275,7 @@ urMeetings/
 │   │   │   ├── notes.tsx           # Saved meetings list
 │   │   │   ├── notes.$id.tsx       # Meeting detail + edit + export
 │   │   │   ├── ask.tsx             # AI Q&A across meetings
-│   │   │   ├── bot.tsx             # urBriefs AI Bot deploy & manage panel
+│   │   │   ├── bot.tsx             # urBrief AI Bot deploy & manage panel
 │   │   │   └── settings.tsx        # Account, avatar, preferences
 │   │   └── ...
 │   ├── components/
@@ -295,7 +295,7 @@ urMeetings/
 │   │       ├── auth-attacher.ts    # Client-side Bearer token attachment
 │   │       └── types.ts            # Generated database types
 │   └── lib/
-│       ├── meetings.functions.ts   # All server functions (CRUD + AI + urBriefs)
+│       ├── meetings.functions.ts   # All server functions (CRUD + AI + urBrief)
 │       └── utils.ts
 ├── supabase/
 │   └── migrations/                 # Database schema + RLS policies

@@ -323,7 +323,7 @@ export const askMeetingNotes = createServerFn({ method: "POST" })
 
 const CreateRecallBotInput = z.object({
   meetingUrl: z.string().min(5),
-  botName: z.string().optional().default("urBriefs"),
+  botName: z.string().optional().default("urBrief"),
 });
 
 export const createRecallBot = createServerFn({ method: "POST" })

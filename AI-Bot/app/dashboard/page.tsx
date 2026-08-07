@@ -130,7 +130,7 @@ export default function Dashboard() {
               </div>
               <h3 className="text-2xl font-black mb-2">No bots yet</h3>
               <p className="text-muted-foreground mb-6 max-w-sm">
-                Create your first meeting bot — paste a link and urBriefs handles the rest.
+                Create your first meeting bot — paste a link and urBrief handles the rest.
               </p>
               <button
                 onClick={() => router.push('/create-bot')}

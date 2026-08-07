@@ -27,10 +27,9 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/bot")({
-  head: () => ({ meta: [{ title: "urBriefs AI Meeting Bot — urMeetings" }] }),
+  head: () => ({ meta: [{ title: "urBrief AI Meeting Bot — urMeetings" }] }),
   component: MeetingBotPage,
 });
 
@@ -51,8 +50,7 @@ function MeetingBotPage() {
 
   // Form state
   const [meetingUrl, setMeetingUrl] = useState("");
-  const [botName, setBotName] = useState("urBriefs");
-  const [botName, setBotName] = useState("urBriefs");
+  const [botName, setBotName] = useState("urBrief");
 
   const [isJoining, setIsJoining] = useState(false);
   const [joinStep, setJoinStep] = useState<"idle" | "connecting" | "recording" | "done">("idle");
@@ -99,13 +97,13 @@ function MeetingBotPage() {
       const result = await createRecallBotFn({
         data: {
           meetingUrl: meetingUrl.trim(),
-          botName: botName.trim() || "urBriefs",
+          botName: botName.trim() || "urBrief",
         },
       });
 
       setJoinStep("done");
       setIsJoining(false);
-      toast.success(`urBriefs bot deployed to meeting! Bot ID: ${result.bot_id}`);
+      toast.success(`urBrief bot deployed to meeting! Bot ID: ${result.bot_id}`);
       setActiveTab("dashboard");
     } catch (err) {
       setIsJoining(false);
@@ -152,13 +150,13 @@ function MeetingBotPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-violet/20 px-3 py-1 text-xs font-black text-ink uppercase tracking-wider mb-2">
-              <Bot className="h-4 w-4 text-violet" /> urBriefs AI Assistant Bot
+              <Bot className="h-4 w-4 text-violet" /> urBrief AI Assistant Bot
             </div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-ink">
-              urBriefs Meeting Bot
+              urBrief Meeting Bot
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Deploy urBriefs to Google Meet, Zoom, MS Teams, or Webex. Automatically record, transcribe, and summarize calls.
+              Deploy urBrief to Google Meet, Zoom, MS Teams, or Webex. Automatically record, transcribe, and summarize calls.
             </p>
           </div>
 
@@ -187,15 +185,13 @@ function MeetingBotPage() {
           </div>
         </div>
 
-        </div>
-
         {/* TAB 1: DEPLOY BOT */}
         {activeTab === "deploy" && (
           <div className="grid gap-6 md:grid-cols-12">
             <div className="md:col-span-7 rounded-3xl ink-border bg-yellow/30 p-6 pop">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-black flex items-center gap-2">
-                  <Link2 className="h-5 w-5 text-violet" /> Deploy urBriefs Bot
+                  <Link2 className="h-5 w-5 text-violet" /> Deploy urBrief Bot
                 </h2>
               </div>
 
@@ -239,11 +235,11 @@ function MeetingBotPage() {
                   {isJoining ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      Deploying urBriefs...
+                      Deploying urBrief...
                     </>
                   ) : (
                     <>
-                      <Bot className="h-5 w-5" /> Deploy urBriefs to Meeting
+                      <Bot className="h-5 w-5" /> Deploy urBrief to Meeting
                     </>
                   )}
                 </button>
@@ -273,12 +269,12 @@ function MeetingBotPage() {
             <div className="md:col-span-5 space-y-4">
               <div className="rounded-3xl ink-border bg-mint/40 p-6 pop">
                 <h3 className="text-lg font-black mb-3 flex items-center gap-2">
-                  <Users className="h-5 w-5 text-emerald-800" /> How urBriefs Works
+                  <Users className="h-5 w-5 text-emerald-800" /> How urBrief Works
                 </h3>
                 <ul className="space-y-3 text-xs leading-relaxed font-semibold text-ink/80">
                   <li className="flex items-start gap-2">
                     <ShieldCheck className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
-                    <span><strong>Auto-Join Call:</strong> urBriefs joins Google Meet, Zoom, Teams, and Webex calls as a silent participant.</span>
+                    <span><strong>Auto-Join Call:</strong> urBrief joins Google Meet, Zoom, Teams, and Webex calls as a silent participant.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Mic className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
@@ -323,7 +319,7 @@ function MeetingBotPage() {
                 <div>
                   <h3 className="text-lg font-black">No active bots found</h3>
                   <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                    You haven't deployed any urBriefs bots yet. Switch to the Deploy Bot tab to send urBriefs to your first call!
+                    You haven't deployed any urBrief bots yet. Switch to the Deploy Bot tab to send urBrief to your first call!
                   </p>
                 </div>
                 <button
@@ -343,7 +339,7 @@ function MeetingBotPage() {
                           {getPlatformIcon(bot.meeting_platform)}
                         </span>
                         <div>
-                          <h4 className="font-black text-sm">{bot.name || "urBriefs"}</h4>
+                          <h4 className="font-black text-sm">{bot.name || "urBrief"}</h4>
                           <p className="text-xs text-muted-foreground capitalize">{bot.meeting_platform}</p>
                         </div>
                       </div>

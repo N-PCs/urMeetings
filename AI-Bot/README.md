@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>urBriefs</h1>
+  <h1>urBrief</h1>
   <p><strong>Intelligent Meeting Agent & Automated Archivist</strong></p>
   
   [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
@@ -12,7 +12,7 @@
 
 ## ⚡ Overview
 
-**urBriefs** is an autonomous AI agent designed to live inside your meetings. It doesn't just record; it participates.
+**urBrief** is an autonomous AI agent designed to live inside your meetings. It doesn't just record; it participates.
 
 *   **👻 Silent Observer:** Spawns a bot that seamlessly joins your Zoom, Google Meet, or Teams calls.
 *   **🎥 Intelligent Recording:** Captures high-quality audio and video without disrupting the flow.
@@ -21,7 +21,7 @@
 
 ## 🏗️ Architecture
 
-urBriefs follows an event-driven architecture to ensure scalability and real-time responsiveness.
+urBrief follows an event-driven architecture to ensure scalability and real-time responsiveness.
 
 ```mermaid
 graph TD

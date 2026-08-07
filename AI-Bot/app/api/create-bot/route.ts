@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         meeting_url,
-        bot_name: bot_name || "urBriefs",
+        bot_name: bot_name || "urBrief",
         speech_to_text: "Gladia",
         webhook_url: `${webpageUrl}/api/webhook`,
       }),

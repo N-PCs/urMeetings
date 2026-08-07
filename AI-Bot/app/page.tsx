@@ -9,7 +9,7 @@ export default function MarketingPage() {
   const features = [
     {
       title: "Intelligent Recording",
-      description: "urBriefs joins your calls automatically, ensuring no moment is missed.",
+      description: "urBrief joins your calls automatically, ensuring no moment is missed.",
       icon: <Bot className="w-5 h-5" />,
       bg: "bg-[oklch(0.55_0.24_285)]",  // violet
       textColor: "text-[oklch(0.985_0.008_90)]",
@@ -47,7 +47,7 @@ export default function MarketingPage() {
             <span className="inline-grid h-9 w-9 place-items-center rounded-xl ink-border bg-[oklch(0.55_0.24_285)] text-[oklch(0.985_0.008_90)] pop-sm">
               <Bot className="w-5 h-5" />
             </span>
-            <span className="font-display text-xl font-black tracking-tight">urBriefs</span>
+            <span className="font-display text-xl font-black tracking-tight">urBrief</span>
           </div>
           <button
             onClick={() => router.push('/dashboard')}
@@ -77,7 +77,7 @@ export default function MarketingPage() {
           </h1>
 
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            Drop a Google Meet, Zoom, or Teams link. <strong>urBriefs</strong> joins the call, records everything,
+            Drop a Google Meet, Zoom, or Teams link. <strong>urBrief</strong> joins the call, records everything,
             and instantly turns it into transcripts and summaries — no effort needed.
           </p>
 
@@ -105,7 +105,7 @@ export default function MarketingPage() {
             </span>
             <h2 className="mt-3 text-4xl font-black leading-tight sm:text-5xl">
               Drop a link.{" "}
-              <span className="text-muted-foreground">urBriefs handles the rest.</span>
+              <span className="text-muted-foreground">urBrief handles the rest.</span>
             </h2>
           </div>
 
@@ -138,14 +138,14 @@ export default function MarketingPage() {
               <div>
                 <h2 className="text-3xl font-black sm:text-4xl">Ready in seconds.</h2>
                 <p className="mt-2 max-w-lg text-sm font-bold opacity-90">
-                  Paste a meeting URL and let urBriefs do the work. No setup needed.
+                  Paste a meeting URL and let urBrief do the work. No setup needed.
                 </p>
               </div>
               <button
                 onClick={() => router.push('/create-bot')}
                 className="inline-flex h-12 items-center gap-2 rounded-xl ink-border bg-[oklch(0.88_0.19_95)] px-5 text-base font-bold text-foreground pop"
               >
-                <Bot className="h-4 w-4" /> Deploy urBriefs Now
+                <Bot className="h-4 w-4" /> Deploy urBrief Now
               </button>
             </div>
           </div>

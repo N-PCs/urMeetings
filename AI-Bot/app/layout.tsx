@@ -13,7 +13,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "urBriefs - AI Meeting Assistant",
+  title: "urBrief - AI Meeting Assistant",
   description: "Built for urMeetings",
 };
 

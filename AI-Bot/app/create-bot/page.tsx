@@ -53,7 +53,7 @@ export default function CreateBot() {
           </button>
           <div>
             <h1 className="text-2xl font-black tracking-tight">Deploy a New Bot</h1>
-            <p className="text-xs text-muted-foreground font-bold">Paste a meeting link and urBriefs joins for you</p>
+            <p className="text-xs text-muted-foreground font-bold">Paste a meeting link and urBrief joins for you</p>
           </div>
         </header>
 
@@ -61,7 +61,7 @@ export default function CreateBot() {
         <div className="py-10">
           {/* Decorative sticker */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full ink-border bg-[oklch(0.88_0.19_95)] px-3 py-1 text-xs font-bold pop-sm">
-            <Bot className="w-3.5 h-3.5" /> urBriefs · Zoom · Meet · Teams
+            <Bot className="w-3.5 h-3.5" /> urBrief · Zoom · Meet · Teams
           </div>
 
           <div className="rounded-2xl ink-border bg-card p-6 sm:p-8 pop-lg">
@@ -105,7 +105,7 @@ export default function CreateBot() {
                   value={formData.bot_name}
                   onChange={(e) => setFormData({ ...formData, bot_name: e.target.value })}
                   className="w-full px-3 py-3 rounded-xl ink-border bg-background font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[oklch(0.55_0.24_285)] focus:ring-offset-2"
-                  placeholder="urBriefs"
+                  placeholder="urBrief"
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-1.5 font-bold">
@@ -136,7 +136,7 @@ export default function CreateBot() {
                   ) : (
                     <>
                       <Bot className="w-4 h-4" />
-                      Deploy urBriefs
+                      Deploy urBrief
                     </>
                   )}
                 </button>
