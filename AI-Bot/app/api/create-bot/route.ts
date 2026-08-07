@@ -13,68 +13,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get webpage URL from environment variables
-    const webpage_url = process.env.WEBPAGE_URL;
-    if (!webpage_url) {
+    const apiKey = process.env.MEETING_BAAS_API_KEY;
+    const baseUrl = process.env.MEETING_BAAS_BASE_URL || "https://api.meetingbaas.com";
+    const webpageUrl = process.env.WEBPAGE_URL || "http://localhost:3000";
+
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "WEBPAGE_URL not configured in environment variables" },
+        { error: "MEETING_BAAS_API_KEY is not configured in environment variables" },
         { status: 500 }
       );
     }
 
-    // Call Recall AI's create bot endpoint
-    const recallResponse = await fetch(
-      `${process.env.RECALL_AI_BASE_URL}/api/v1/bot`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Token ${process.env.RECALL_AI_API_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          meeting_url,
-          bot_name,
-          output_media: {
-            screenshare: {
-              kind: "webpage",
-              config: {
-                url: webpage_url,
-              },
-            },
-          },
-          variant: {
-            zoom: "web_4_core",
-            google_meet: "web_4_core",
-            microsoft_teams: "web_4_core",
-          },
-          recording_config: {
-            transcript: {
-              provider: {
-                recallai_streaming: {
-                  language_code: "auto",
-                  mode: "prioritize_accuracy",
-                },
-              },
-            },
-          },
-        }),
-      }
-    );
+    // Call Meeting Baas endpoint to dispatch bot
+    const baasResponse = await fetch(`${baseUrl}/bots`, {
+      method: "POST",
+      headers: {
+        "x-meeting-baas-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        meeting_url,
+        bot_name: bot_name || "Np Assistant",
+        speech_to_text: "Gladia",
+        webhook_url: `${webpageUrl}/api/webhook`,
+      }),
+    });
 
-    if (!recallResponse.ok) {
-      const errorText = await recallResponse.text();
+    if (!baasResponse.ok) {
+      const errorText = await baasResponse.text();
       return NextResponse.json(
-        { error: "Failed to create bot with Recall AI", details: errorText },
+        { error: "Failed to create bot with Meeting Baas", details: errorText },
+        { status: baasResponse.status }
+      );
+    }
+
+    const baasData = await baasResponse.json();
+
+    // Extract bot ID from response
+    const botId = baasData.bot_id || baasData.id;
+    if (!botId) {
+      return NextResponse.json(
+        { error: "Meeting Baas did not return a valid bot_id", details: baasData },
         { status: 500 }
       );
     }
 
-    const recallData = await recallResponse.json();
+    // Determine platform from URL
+    let platform = "unknown";
+    if (meeting_url.includes("google.com") || meeting_url.includes("meet.google")) {
+      platform = "google_meet";
+    } else if (meeting_url.includes("zoom.us")) {
+      platform = "zoom";
+    } else if (meeting_url.includes("teams")) {
+      platform = "microsoft_teams";
+    }
 
-    // Extract data from Recall AI response
-    const botId = recallData.id;
-    const platform = recallData.meeting_url?.platform || "unknown";
-    const joinAt = recallData.join_at;
+    const joinAt = new Date().toISOString();
 
     // Store bot information in Supabase
     const { data, error } = await supabase
@@ -87,27 +81,33 @@ export async function POST(request: NextRequest) {
             ? meeting_url
             : JSON.stringify(meeting_url),
         meeting_platform: platform,
-        bot_status: "creating",
+        bot_status: "joining_call",
         joined_at: joinAt,
-        webpage_url: webpage_url,
+        webpage_url: webpageUrl,
       })
       .select()
       .single();
 
     if (error) {
-      console.error("Supabase error:", error);
-      return NextResponse.json(
-        { error: "Failed to store bot data", details: error.message },
-        { status: 500 }
-      );
+      console.error("Supabase error inserting bot:", error);
+      // Still return success if Meeting Baas created the bot
+      return NextResponse.json({
+        success: true,
+        bot_id: botId,
+        platform,
+        join_at: joinAt,
+        data: baasData,
+        db_warning: error.message,
+      });
     }
 
     return NextResponse.json({
       success: true,
       bot_id: botId,
-      platform: platform,
+      platform,
       join_at: joinAt,
-      data: recallData,
+      data: baasData,
+      db_data: data,
     });
   } catch (error) {
     console.error("Create bot error:", error);

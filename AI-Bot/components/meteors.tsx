@@ -21,7 +21,7 @@ export const Meteors = ({ number = 20 }: MeteorsProps) => {
       }))
       setMeteors(meteorArray)
     }
-  }, [flnumber])
+  }, [number])
 
   if (meteors.length === 0) return null
 

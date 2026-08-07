@@ -1,73 +1,81 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { bot_id } = body
+    const body = await request.json();
+    const { bot_id } = body;
 
     if (!bot_id) {
       return NextResponse.json(
-        { error: 'Missing required field: bot_id' },
+        { error: "Missing required field: bot_id" },
         { status: 400 }
-      )
+      );
     }
 
-    // Call Recall AI's leave_call endpoint
-    const recallResponse = await fetch(`${process.env.RECALL_AI_BASE_URL}/api/v1/bot/${bot_id}/leave_call/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${process.env.RECALL_AI_API_TOKEN}`,
-        'Accept': 'application/json',
-      }
-    })
+    const apiKey = process.env.MEETING_BAAS_API_KEY;
+    const baseUrl = process.env.MEETING_BAAS_BASE_URL || "https://api.meetingbaas.com";
 
-    if (!recallResponse.ok) {
-      const errorText = await recallResponse.text()
+    if (!apiKey) {
       return NextResponse.json(
-        { error: 'Failed to remove bot from call', details: errorText },
-        { status: recallResponse.status }
-      )
+        { error: "MEETING_BAAS_API_KEY is not configured" },
+        { status: 500 }
+      );
     }
 
-    const recallData = await recallResponse.json()
+    // Call Meeting Baas DELETE bot endpoint
+    const baasResponse = await fetch(`${baseUrl}/bots/${bot_id}`, {
+      method: "DELETE",
+      headers: {
+        "x-meeting-baas-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+    });
 
-    // Update bot status in Supabase to indicate it's leaving
+    if (!baasResponse.ok) {
+      const errorText = await baasResponse.text();
+      return NextResponse.json(
+        { error: "Failed to remove bot from Meeting Baas call", details: errorText },
+        { status: baasResponse.status }
+      );
+    }
+
+    let baasData = {};
+    try {
+      baasData = await baasResponse.json();
+    } catch {
+      // Body may be empty on DELETE
+    }
+
+    // Update bot status in Supabase to leaving_call
     const { data: updatedBot, error } = await supabase
-      .from('bots')
-      .update({ 
-        bot_status: 'leaving_call'
+      .from("bots")
+      .update({
+        bot_status: "leaving_call",
       })
-      .eq('id', bot_id)
+      .eq("id", bot_id)
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error('Supabase error updating bot status:', error)
-      // Don't fail the request if database update fails, as the bot was successfully removed from call
-      console.warn(`Bot ${bot_id} was removed from call but database update failed:`, error.message)
-    }
-
-    // Extract current status from the response
-    let currentStatus = 'leaving_call'
-    if (recallData.status_changes && recallData.status_changes.length > 0) {
-      const latestStatus = recallData.status_changes[recallData.status_changes.length - 1]
-      currentStatus = latestStatus.code
+      console.warn(`Bot ${bot_id} removed but database update warning:`, error.message);
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Bot successfully removed from call',
+      message: "Bot successfully requested to leave call",
       bot_id: bot_id,
-      current_status: currentStatus,
-      recall_response: recallData
-    })
-
+      current_status: "leaving_call",
+      meeting_baas_response: baasData,
+    });
   } catch (error) {
-    console.error('Remove bot error:', error)
+    console.error("Remove bot error:", error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
-    )
+    );
   }
 }

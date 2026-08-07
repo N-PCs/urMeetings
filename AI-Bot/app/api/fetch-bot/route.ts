@@ -1,108 +1,94 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const bot_id = searchParams.get('bot_id')
+    const { searchParams } = new URL(request.url);
+    const bot_id = searchParams.get("bot_id");
 
     if (!bot_id) {
       return NextResponse.json(
-        { error: 'Missing required query parameter: bot_id' },
+        { error: "Missing required query parameter: bot_id" },
         { status: 400 }
-      )
+      );
     }
 
-    // Call Recall AI's retrieve bot endpoint
-    const recallResponse = await fetch(`${process.env.RECALL_AI_BASE_URL}/api/v1/bot/${bot_id}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Token ${process.env.RECALL_AI_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      }
-    })
+    const apiKey = process.env.MEETING_BAAS_API_KEY;
+    const baseUrl = process.env.MEETING_BAAS_BASE_URL || "https://api.meetingbaas.com";
 
-    if (!recallResponse.ok) {
-      const errorText = await recallResponse.text()
+    if (!apiKey) {
       return NextResponse.json(
-        { error: 'Failed to fetch bot from Recall AI', details: errorText },
+        { error: "MEETING_BAAS_API_KEY is not configured" },
         { status: 500 }
-      )
+      );
     }
 
-    const recallData = await recallResponse.json()
+    // Call Meeting Baas API to fetch bot details
+    const baasResponse = await fetch(`${baseUrl}/v2/bots/${bot_id}`, {
+      method: "GET",
+      headers: {
+        "x-meeting-baas-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+    });
 
-    // Extract recording and transcript URLs
-    let recordingUrl = null
-    let transcriptUrl = null
-
-    if (recallData.recordings && recallData.recordings.length > 0) {
-      const recording = recallData.recordings[0]
-      
-      // Get video recording URL
-      if (recording.media_shortcuts?.video_mixed?.data?.download_url) {
-        recordingUrl = recording.media_shortcuts.video_mixed.data.download_url
-      }
-      
-      // Get transcript URL
-      if (recording.media_shortcuts?.transcript?.data?.download_url) {
-        transcriptUrl = recording.media_shortcuts.transcript.data.download_url
-      }
+    if (!baasResponse.ok) {
+      const errorText = await baasResponse.text();
+      return NextResponse.json(
+        { error: "Failed to fetch bot from Meeting Baas", details: errorText },
+        { status: baasResponse.status }
+      );
     }
 
-    // Update bot information in Supabase
-    const updateData: any = {}
+    const baasData = await baasResponse.json();
+    const botInfo = baasData.bot_data?.bot || baasData.bot || baasData;
 
-    // Update status based on latest status change
-    if (recallData.status_changes && recallData.status_changes.length > 0) {
-      const latestStatus = recallData.status_changes[recallData.status_changes.length - 1]
-      updateData.bot_status = latestStatus.code
-    }
+    // Extract recording and transcript URLs if available
+    const recordingUrl = botInfo.mp4 || botInfo.recording_url || null;
+    const transcriptUrl = botInfo.transcript || botInfo.transcript_url || null;
+    const status = botInfo.status || baasData.status || "in_call";
 
-    // Update recording and transcript URLs if available
+    // Prepare Supabase update payload
+    const updateData: Record<string, any> = {
+      bot_status: status,
+    };
+
     if (recordingUrl) {
-      updateData.recording_url = recordingUrl
-      updateData.recording_status = 'done'
+      updateData.recording_url = recordingUrl;
+      updateData.recording_status = "done";
     }
 
     if (transcriptUrl) {
-      updateData.transcript_url = transcriptUrl
-      updateData.transcript_status = 'done'
-    }
-
-    // Update meeting name if available
-    if (recallData.recordings?.[0]?.media_shortcuts?.meeting_metadata?.data?.title) {
-      updateData.meeting_name = recallData.recordings[0].media_shortcuts.meeting_metadata.data.title
+      updateData.transcript_url = typeof transcriptUrl === "string" ? transcriptUrl : JSON.stringify(transcriptUrl);
+      updateData.transcript_status = "done";
     }
 
     const { data, error } = await supabase
-      .from('bots')
+      .from("bots")
       .update(updateData)
-      .eq('id', bot_id)
+      .eq("id", bot_id)
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error('Supabase error:', error)
-      return NextResponse.json(
-        { error: 'Failed to update bot data', details: error.message },
-        { status: 500 }
-      )
+      console.error("Supabase error updating fetched bot:", error);
     }
 
     return NextResponse.json({
       success: true,
-      bot_data: data,
-      recall_data: recallData,
+      bot_data: data || updateData,
+      meeting_baas_data: baasData,
       recording_url: recordingUrl,
-      transcript_url: transcriptUrl
-    })
-
+      transcript_url: transcriptUrl,
+    });
   } catch (error) {
-    console.error('Fetch bot error:', error)
+    console.error("Fetch bot error:", error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
-    )
+    );
   }
 }
