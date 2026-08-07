@@ -167,7 +167,7 @@ export const saveMeeting = createServerFn({ method: "POST" })
 
 const BotJoinInput = z.object({
   meetingUrl: z.string().min(5),
-  botName: z.string().optional().default("urMeetings AI Bot"),
+  botName: z.string().optional().default("urBriefs"),
   meetingTopic: z.string().optional(),
 });
 
@@ -395,7 +395,7 @@ export const askMeetingNotes = createServerFn({ method: "POST" })
 
 const CreateRecallBotInput = z.object({
   meetingUrl: z.string().min(5),
-  botName: z.string().optional().default("Np Bot"),
+  botName: z.string().optional().default("urBriefs"),
 });
 
 export const createRecallBot = createServerFn({ method: "POST" })

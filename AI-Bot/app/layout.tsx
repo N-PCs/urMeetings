@@ -13,8 +13,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Np - AI Meeting Assistant",
-  description: "Built by Neel P (N-PCs)",
+  title: "urBriefs - AI Meeting Assistant",
+  description: "Built for urMeetings",
 };
 
 export default function RootLayout({

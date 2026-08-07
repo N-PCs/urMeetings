@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>Np</h1>
+  <h1>urBriefs</h1>
   <p><strong>Intelligent Meeting Agent & Automated Archivist</strong></p>
   
   [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
@@ -12,16 +12,16 @@
 
 ## ⚡ Overview
 
-**Np** is an autonomous AI agent designed to live inside your meetings. It doesn't just record; it participates.
+**urBriefs** is an autonomous AI agent designed to live inside your meetings. It doesn't just record; it participates.
 
 *   **👻 Silent Observer:** Spawns a bot that seamlessly joins your Zoom, Google Meet, or Teams calls.
 *   **🎥 Intelligent Recording:** Captures high-quality audio and video without disrupting the flow.
-*   **🧠 Active Participant:** Capable of answering questions directly within the meeting context (coming soon).
+*   **🧠 Active Participant:** Capable of answering questions directly within the meeting context.
 *   **📝 Auto-Transcription:** Generates speaker-diarized transcripts and summaries instantly.
 
 ## 🏗️ Architecture
 
-Np follows an event-driven, serverless architecture to ensure scalability and real-time responsiveness.
+urBriefs follows an event-driven architecture to ensure scalability and real-time responsiveness.
 
 ```mermaid
 graph TD

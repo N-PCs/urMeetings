@@ -24,7 +24,6 @@ export const useSupabaseRealTime = (botId: string, onUpdate: (bot: Bot) => void)
           filter: `id=eq.${botId}`, // Only listen to updates for this specific bot
         },
         (payload) => {
-          console.log('Supabase real-time update:', payload)
           setLastUpdate(new Date().toISOString())
           
           if (payload.eventType === 'UPDATE' && payload.new) {
@@ -34,11 +33,10 @@ export const useSupabaseRealTime = (botId: string, onUpdate: (bot: Bot) => void)
         }
       )
       .subscribe((status) => {
-        console.log('Supabase real-time status:', status)
         setIsConnected(status === 'SUBSCRIBED')
         
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to real-time updates for bot:', botId)
+          // Successfully subscribed
         } else if (status === 'CHANNEL_ERROR') {
           console.error('Error subscribing to real-time updates')
         } else if (status === 'TIMED_OUT') {
@@ -50,7 +48,6 @@ export const useSupabaseRealTime = (botId: string, onUpdate: (bot: Bot) => void)
 
     // Cleanup function
     return () => {
-      console.log('Unsubscribing from real-time updates for bot:', botId)
       realtimeChannel.unsubscribe()
       setIsConnected(false)
       setChannel(null)

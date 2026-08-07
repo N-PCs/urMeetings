@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log("Meeting Baas webhook payload received:", JSON.stringify(body, null, 2));
 
     // Extract bot ID from payload
     const botId =
@@ -60,8 +59,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    console.log(`Successfully updated bot ${botId} via webhook:`, updateData);
 
     return NextResponse.json({
       success: true,

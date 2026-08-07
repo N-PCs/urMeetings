@@ -31,7 +31,7 @@ import { AudioFileUpload } from "@/components/AudioFileUpload";
 import { useMeetingListener } from "@/hooks/use-meeting-listener";
 
 export const Route = createFileRoute("/_authenticated/bot")({
-  head: () => ({ meta: [{ title: "Np AI Meeting Bot — urMeetings" }] }),
+  head: () => ({ meta: [{ title: "urBriefs AI Meeting Bot — urMeetings" }] }),
   component: MeetingBotPage,
 });
 
@@ -52,7 +52,7 @@ function MeetingBotPage() {
 
   // Form state
   const [meetingUrl, setMeetingUrl] = useState("");
-  const [botName, setBotName] = useState("Np");
+  const [botName, setBotName] = useState("urBriefs");
   const [useSimulation, setUseSimulation] = useState(false);
 
   const [isJoining, setIsJoining] = useState(false);
@@ -114,13 +114,13 @@ function MeetingBotPage() {
         const result = await joinSimulatedBotFn({
           data: {
             meetingUrl: meetingUrl.trim(),
-            botName: botName.trim() || "Np Bot",
+            botName: botName.trim() || "urBriefs",
           },
         });
         setJoinStep("done");
         setResultData(result);
         setIsJoining(false);
-        toast.success(`Simulated Np Bot joined and generated summary!`);
+        toast.success(`Simulated urBriefs bot joined and generated summary!`);
       } catch (err) {
         setIsJoining(false);
         setJoinStep("idle");
@@ -132,18 +132,18 @@ function MeetingBotPage() {
         const result = await createRecallBotFn({
           data: {
             meetingUrl: meetingUrl.trim(),
-            botName: botName.trim() || "Np",
+            botName: botName.trim() || "urBriefs",
           },
         });
 
         setJoinStep("done");
         setIsJoining(false);
-        toast.success(`Np Bot deployed to meeting! Bot ID: ${result.bot_id}`);
+        toast.success(`urBriefs bot deployed to meeting! Bot ID: ${result.bot_id}`);
         setActiveTab("dashboard");
       } catch (err) {
         setIsJoining(false);
         setJoinStep("idle");
-        const errMsg = err instanceof Error ? err.message : "Failed to deploy Recall AI bot";
+        const errMsg = err instanceof Error ? err.message : "Failed to deploy bot";
         toast.error(errMsg);
         
         // If Recall token missing, offer simulation
@@ -192,13 +192,13 @@ function MeetingBotPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-violet/20 px-3 py-1 text-xs font-black text-ink uppercase tracking-wider mb-2">
-              <Bot className="h-4 w-4 text-violet" /> Np AI Assistant Bot
+              <Bot className="h-4 w-4 text-violet" /> urBriefs AI Assistant Bot
             </div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-ink">
-              AI Meeting Bot
+              urBriefs Meeting Bot
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Deploy Np to Google Meet, Zoom, MS Teams, or Webex. Automatically record, transcribe, and summarize calls.
+              Deploy urBriefs to Google Meet, Zoom, MS Teams, or Webex. Automatically record, transcribe, and summarize calls.
             </p>
           </div>
 
@@ -268,7 +268,7 @@ function MeetingBotPage() {
             <div className="md:col-span-7 rounded-3xl ink-border bg-yellow/30 p-6 pop">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-black flex items-center gap-2">
-                  <Link2 className="h-5 w-5 text-violet" /> Deploy Np Bot
+                  <Link2 className="h-5 w-5 text-violet" /> Deploy urBriefs Bot
                 </h2>
                 <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-muted-foreground">
                   <input
@@ -321,11 +321,11 @@ function MeetingBotPage() {
                   {isJoining ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      Deploying Np Bot...
+                      Deploying urBriefs...
                     </>
                   ) : (
                     <>
-                      <Bot className="h-5 w-5" /> Deploy Np to Meeting
+                      <Bot className="h-5 w-5" /> Deploy urBriefs to Meeting
                     </>
                   )}
                 </button>
@@ -340,7 +340,7 @@ function MeetingBotPage() {
                   <div className="space-y-2 text-xs font-bold">
                     <div className={`flex items-center gap-2 ${joinStep === "connecting" ? "text-violet font-extrabold" : "text-ink/60"}`}>
                       {joinStep === "connecting" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
-                      Step 1: Dispatching bot "{botName}" via Recall.ai...
+                      Step 1: Dispatching bot "{botName}"...
                     </div>
                     <div className={`flex items-center gap-2 ${joinStep === "recording" ? "text-violet font-extrabold" : joinStep === "done" ? "text-ink/60" : "text-ink/30"}`}>
                       {joinStep === "recording" ? <Loader2 className="h-4 w-4 animate-spin" /> : joinStep === "done" ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <Mic className="h-4 w-4" />}
@@ -355,12 +355,12 @@ function MeetingBotPage() {
             <div className="md:col-span-5 space-y-4">
               <div className="rounded-3xl ink-border bg-mint/40 p-6 pop">
                 <h3 className="text-lg font-black mb-3 flex items-center gap-2">
-                  <Users className="h-5 w-5 text-emerald-800" /> How Np Bot Works
+                  <Users className="h-5 w-5 text-emerald-800" /> How urBriefs Works
                 </h3>
                 <ul className="space-y-3 text-xs leading-relaxed font-semibold text-ink/80">
                   <li className="flex items-start gap-2">
                     <ShieldCheck className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
-                    <span><strong>Auto-Join via Recall.ai:</strong> Np joins Google Meet, Zoom, Teams, and Webex calls as a silent participant.</span>
+                    <span><strong>Auto-Join Call:</strong> urBriefs joins Google Meet, Zoom, Teams, and Webex calls as a silent participant.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Mic className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
@@ -425,7 +425,7 @@ function MeetingBotPage() {
                 <div>
                   <h3 className="text-lg font-black">No active bots found</h3>
                   <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                    You haven't deployed any Recall.ai bots yet. Switch to the Deploy Bot tab to send Np to your first call!
+                    You haven't deployed any urBriefs bots yet. Switch to the Deploy Bot tab to send urBriefs to your first call!
                   </p>
                 </div>
                 <button
@@ -445,7 +445,7 @@ function MeetingBotPage() {
                           {getPlatformIcon(bot.meeting_platform)}
                         </span>
                         <div>
-                          <h4 className="font-black text-sm">{bot.name || "Np Bot"}</h4>
+                          <h4 className="font-black text-sm">{bot.name || "urBriefs"}</h4>
                           <p className="text-xs text-muted-foreground capitalize">{bot.meeting_platform}</p>
                         </div>
                       </div>
@@ -461,14 +461,6 @@ function MeetingBotPage() {
                         <Calendar className="h-3.5 w-3.5" />
                         {new Date(bot.created_at).toLocaleString()}
                       </span>
-                      <a
-                        href={`http://localhost:3001/bot/${bot.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-violet flex items-center gap-1 hover:underline font-black"
-                      >
-                        Details <ExternalLink className="h-3 w-3" />
-                      </a>
                     </div>
                   </div>
                 ))}
