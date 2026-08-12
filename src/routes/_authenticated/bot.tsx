@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AppShell } from "@/components/app-shell";
 import { useServerFn } from "@tanstack/react-start";
-import { joinMeetingBot, createRecallBot, listRecallBots } from "@/lib/meetings.functions";
+import { createRecallBot, listRecallBots } from "@/lib/meetings.functions";
 import {
   Bot,
   Loader2,
@@ -43,6 +43,11 @@ interface RecallBotItem {
   recording_status?: string;
   transcript_status?: string;
   meeting_name?: string;
+  title?: string;
+  summary?: string;
+  action_items?: string[];
+  transcript?: string;
+  recording_url?: string;
 }
 
 function MeetingBotPage() {
@@ -114,32 +119,58 @@ function MeetingBotPage() {
   }
 
   const getStatusBadge = (status: string) => {
-    const base = "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ink-border";
+    const base =
+      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ink-border";
     switch (status) {
       case "done":
-        return <span className={`${base} bg-mint`}><CheckCircle2 className="w-3 h-3 text-emerald-800" /> Done</span>;
+        return (
+          <span className={`${base} bg-mint`}>
+            <CheckCircle2 className="w-3 h-3 text-emerald-800" /> Done
+          </span>
+        );
       case "creating":
       case "joining_call":
       case "in_call_recording":
-        return <span className={`${base} bg-violet text-primary-foreground`}><Circle className="w-3 h-3 blink" /> Live</span>;
+        return (
+          <span className={`${base} bg-violet text-primary-foreground`}>
+            <Circle className="w-3 h-3 blink" /> Live
+          </span>
+        );
       case "call_ended":
-        return <span className={`${base} bg-yellow`}><AlertCircle className="w-3 h-3" /> Ended</span>;
+        return (
+          <span className={`${base} bg-yellow`}>
+            <AlertCircle className="w-3 h-3" /> Ended
+          </span>
+        );
       case "failed":
-        return <span className={`${base} bg-pink text-primary-foreground`}><XCircle className="w-3 h-3" /> Failed</span>;
+        return (
+          <span className={`${base} bg-pink text-primary-foreground`}>
+            <XCircle className="w-3 h-3" /> Failed
+          </span>
+        );
       default:
-        return <span className={`${base} bg-muted`}><Circle className="w-3 h-3" /> {status}</span>;
+        return (
+          <span className={`${base} bg-muted`}>
+            <Circle className="w-3 h-3" /> {status}
+          </span>
+        );
     }
   };
 
   const getPlatformIcon = (platform: string) => {
     switch (platform?.toLowerCase()) {
-      case "zoom": return <Video className="w-4 h-4" />;
+      case "zoom":
+        return <Video className="w-4 h-4" />;
       case "teams":
-      case "microsoft teams": return <Users className="w-4 h-4" />;
+      case "microsoft teams":
+        return <Users className="w-4 h-4" />;
       case "meet":
-      case "google meet": return <Camera className="w-4 h-4" />;
-      case "webex": return <Monitor className="w-4 h-4" />;
-      default: return <Video className="w-4 h-4" />;
+      case "google meet":
+        return <Camera className="w-4 h-4" />;
+      case "webex":
+        return <Monitor className="w-4 h-4" />;
+      default:
+        return <Video className="w-4 h-4" />;
     }
   };
 
@@ -156,7 +187,8 @@ function MeetingBotPage() {
               urBrief Meeting Bot
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Deploy urBrief to Google Meet, Zoom, MS Teams, or Webex. Automatically record, transcribe, and summarize calls.
+              Deploy urBrief to Google Meet, Zoom, MS Teams, or Webex. Automatically record,
+              transcribe, and summarize calls.
             </p>
           </div>
 
@@ -252,12 +284,26 @@ function MeetingBotPage() {
                     Live Bot Progress Status:
                   </p>
                   <div className="space-y-2 text-xs font-bold">
-                    <div className={`flex items-center gap-2 ${joinStep === "connecting" ? "text-violet font-extrabold" : "text-ink/60"}`}>
-                      {joinStep === "connecting" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
+                    <div
+                      className={`flex items-center gap-2 ${joinStep === "connecting" ? "text-violet font-extrabold" : "text-ink/60"}`}
+                    >
+                      {joinStep === "connecting" ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      )}
                       Step 1: Dispatching bot "{botName}"...
                     </div>
-                    <div className={`flex items-center gap-2 ${joinStep === "recording" ? "text-violet font-extrabold" : joinStep === "done" ? "text-ink/60" : "text-ink/30"}`}>
-                      {joinStep === "recording" ? <Loader2 className="h-4 w-4 animate-spin" /> : joinStep === "done" ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <Mic className="h-4 w-4" />}
+                    <div
+                      className={`flex items-center gap-2 ${joinStep === "recording" ? "text-violet font-extrabold" : joinStep === "done" ? "text-ink/60" : "text-ink/30"}`}
+                    >
+                      {joinStep === "recording" ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : joinStep === "done" ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      ) : (
+                        <Mic className="h-4 w-4" />
+                      )}
                       Step 2: Bot joining call, recording audio & transcript...
                     </div>
                   </div>
@@ -274,15 +320,24 @@ function MeetingBotPage() {
                 <ul className="space-y-3 text-xs leading-relaxed font-semibold text-ink/80">
                   <li className="flex items-start gap-2">
                     <ShieldCheck className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
-                    <span><strong>Auto-Join Call:</strong> urBrief joins Google Meet, Zoom, Teams, and Webex calls as a silent participant.</span>
+                    <span>
+                      <strong>Auto-Join Call:</strong> urBrief joins Google Meet, Zoom, Teams, and
+                      Webex calls as a silent participant.
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Mic className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
-                    <span><strong>Real-time Diarization:</strong> Captures high quality audio and assigns speaker labels automatically.</span>
+                    <span>
+                      <strong>Real-time Diarization:</strong> Captures high quality audio and
+                      assigns speaker labels automatically.
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Sparkles className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
-                    <span><strong>Instant AI Summary:</strong> Generates key takeaways and action items once the call finishes.</span>
+                    <span>
+                      <strong>Instant AI Summary:</strong> Generates key takeaways and action items
+                      once the call finishes.
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -319,7 +374,8 @@ function MeetingBotPage() {
                 <div>
                   <h3 className="text-lg font-black">No active bots found</h3>
                   <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                    You haven't deployed any urBrief bots yet. Switch to the Deploy Bot tab to send urBrief to your first call!
+                    You haven't deployed any urBrief bots yet. Switch to the Deploy Bot tab to send
+                    urBrief to your first call!
                   </p>
                 </div>
                 <button
@@ -339,8 +395,12 @@ function MeetingBotPage() {
                           {getPlatformIcon(bot.meeting_platform)}
                         </span>
                         <div>
-                          <h4 className="font-black text-sm">{bot.name || "urBrief"}</h4>
-                          <p className="text-xs text-muted-foreground capitalize">{bot.meeting_platform}</p>
+                          <h4 className="font-black text-sm">
+                            {bot.title || bot.name || "urBrief"}
+                          </h4>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {bot.meeting_platform}
+                          </p>
                         </div>
                       </div>
                       {getStatusBadge(bot.bot_status)}
@@ -349,6 +409,64 @@ function MeetingBotPage() {
                     <p className="text-xs font-mono text-muted-foreground truncate bg-muted p-2 rounded-lg ink-border">
                       {bot.meeting_url}
                     </p>
+
+                    {bot.summary ? (
+                      <div className="space-y-3 border-t border-ink/10 pt-3">
+                        <div>
+                          <h5 className="text-xs font-black uppercase tracking-wider text-violet mb-1">
+                            Executive Summary
+                          </h5>
+                          <p className="text-xs leading-relaxed font-semibold text-ink/80">
+                            {bot.summary}
+                          </p>
+                        </div>
+
+                        {Array.isArray(bot.action_items) && bot.action_items.length > 0 && (
+                          <div>
+                            <h5 className="text-xs font-black uppercase tracking-wider text-violet mb-1">
+                              Action Items
+                            </h5>
+                            <ul className="space-y-1">
+                              {bot.action_items.slice(0, 6).map((item, i) => (
+                                <li
+                                  key={i}
+                                  className="flex items-start gap-1.5 text-xs font-semibold text-ink/80"
+                                >
+                                  <span className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-violet" />
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {bot.recording_url && (
+                          <a
+                            href={bot.recording_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-xl ink-border bg-mint px-3 py-1.5 text-xs font-bold text-emerald-900 pop"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" /> Watch Recording
+                          </a>
+                        )}
+
+                        {bot.transcript && (
+                          <details className="rounded-xl ink-border bg-muted/60 p-3">
+                            <summary className="cursor-pointer text-xs font-black text-ink/70 select-none">
+                              Full Transcript ({bot.transcript.split(/\s+/).length} words)
+                            </summary>
+                            <pre className="mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap text-[11px] leading-relaxed font-mono text-ink/70">
+                              {bot.transcript}
+                            </pre>
+                          </details>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs font-bold text-muted-foreground border-t border-ink/10 pt-2">
+                        Summary will appear here once the call ends and the transcript is ready.
+                      </p>
+                    )}
 
                     <div className="flex items-center justify-between text-xs text-muted-foreground font-bold border-t border-ink/10 pt-2">
                       <span className="flex items-center gap-1">

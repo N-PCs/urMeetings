@@ -20,6 +20,7 @@ import { Route as AuthenticatedAskRouteImport } from './routes/_authenticated/as
 import { Route as AuthenticatedBotRouteImport } from './routes/_authenticated/bot'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as ApiWebhookRouteImport } from './routes/api/webhook'
 import { Route as AuthenticatedNotesIdRouteImport } from './routes/_authenticated/notes.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -76,6 +77,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiWebhookRoute = ApiWebhookRouteImport.update({
+  id: '/api/webhook',
+  path: '/api/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedNotesIdRoute = AuthenticatedNotesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/bot': typeof AuthenticatedBotRoute
   '/notes': typeof AuthenticatedNotesRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
+  '/api/webhook': typeof ApiWebhookRoute
   '/notes/$id': typeof AuthenticatedNotesIdRoute
 }
 export interface FileRoutesByTo {
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/bot': typeof AuthenticatedBotRoute
   '/notes': typeof AuthenticatedNotesRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
+  '/api/webhook': typeof ApiWebhookRoute
   '/notes/$id': typeof AuthenticatedNotesIdRoute
 }
 export interface FileRoutesById {
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/_authenticated/bot': typeof AuthenticatedBotRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/api/webhook': typeof ApiWebhookRoute
   '/_authenticated/notes/$id': typeof AuthenticatedNotesIdRoute
 }
 export interface FileRouteTypes {
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/bot'
     | '/notes'
     | '/settings'
+    | '/api/webhook'
     | '/notes/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/bot'
     | '/notes'
     | '/settings'
+    | '/api/webhook'
     | '/notes/$id'
   id:
     | '__root__'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bot'
     | '/_authenticated/notes'
     | '/_authenticated/settings'
+    | '/api/webhook'
     | '/_authenticated/notes/$id'
   fileRoutesById: FileRoutesById
 }
@@ -174,6 +186,7 @@ export interface RootRouteChildren {
   FeaturesRoute: typeof FeaturesRoute
   LiveRoute: typeof LiveRoute
   TutorialRoute: typeof TutorialRoute
+  ApiWebhookRoute: typeof ApiWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -255,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/webhook': {
+      id: '/api/webhook'
+      path: '/api/webhook'
+      fullPath: '/api/webhook'
+      preLoaderRoute: typeof ApiWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/notes/$id': {
       id: '/_authenticated/notes/$id'
       path: '/$id'
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesRoute: FeaturesRoute,
   LiveRoute: LiveRoute,
   TutorialRoute: TutorialRoute,
+  ApiWebhookRoute: ApiWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
