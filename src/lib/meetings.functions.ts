@@ -224,6 +224,14 @@ export const createRecallBot = createServerFn({ method: "POST" })
         recording_mode: "speaker_view",
         transcription_enabled: true,
         transcription_config: { provider: "gladia" },
+        // Auto-leave so the bot doesn't linger after the call ends:
+        // silence_timeout = leave after Ns of no speech (covers host ending the call),
+        // no_one_joined_timeout / waiting_room_timeout = give up if nobody shows up.
+        timeout_config: {
+          silence_timeout: 120,
+          no_one_joined_timeout: 300,
+          waiting_room_timeout: 300,
+        },
         webhook_url: `${webpageUrl}/api/webhook`,
       }),
     });
@@ -293,4 +301,56 @@ export const listRecallBots = createServerFn({ method: "GET" })
       return [];
     }
     return data ?? [];
+  });
+
+const StopBotInput = z.object({ botId: z.string().min(1) });
+
+export const stopRecallBot = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => StopBotInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const apiKey = process.env.MEETING_BAAS_API_KEY;
+    const baseUrl = process.env.MEETING_BAAS_BASE_URL || "https://api.meetingbaas.com";
+
+    if (!apiKey) {
+      throw new Error("MEETING_BAAS_API_KEY is not configured.");
+    }
+
+    const botRes = await fetch(`${baseUrl}/v2/bots/${encodeURIComponent(data.botId)}/leave`, {
+      method: "POST",
+      headers: {
+        "x-meeting-baas-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+    });
+
+    let leaveResult: { success?: boolean; error?: string } = {};
+    if (botRes.ok) {
+      leaveResult = (await botRes.json()) as { success?: boolean; error?: string };
+    } else {
+      const text = await botRes.text().catch(() => "");
+      leaveResult = { error: `Meeting BaaS leave failed (${botRes.status}): ${text.slice(0, 200)}` };
+      // 409 = bot already in a terminal state (completed/failed) — treat as fine.
+      if (botRes.status !== 409) {
+        throw new Error(leaveResult.error);
+      }
+    }
+
+    await context.supabase
+      .from("bots")
+      .update({ bot_status: "call_ended" })
+      .eq("id", data.botId);
+
+    return { success: true, bot_id: data.botId, data: leaveResult };
+  });
+
+const SyncBotInput = z.object({ botId: z.string().min(1) });
+
+export const syncRecallBot = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => SyncBotInput.parse(input))
+  .handler(async ({ data }) => {
+    const { syncBotFromMeetingBaas } = await import("@/lib/bot-webhook");
+    const result = await syncBotFromMeetingBaas(data.botId);
+    return { success: result.ok, reason: result.reason };
   });

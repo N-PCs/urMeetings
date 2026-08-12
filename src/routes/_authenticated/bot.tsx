@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AppShell } from "@/components/app-shell";
 import { useServerFn } from "@tanstack/react-start";
-import { createRecallBot, listRecallBots } from "@/lib/meetings.functions";
+import { createRecallBot, listRecallBots, stopRecallBot, syncRecallBot } from "@/lib/meetings.functions";
 import {
   Bot,
   Loader2,
@@ -66,12 +66,17 @@ function MeetingBotPage() {
 
   const createRecallBotFn = useServerFn(createRecallBot);
   const fetchBotsFn = useServerFn(listRecallBots);
+  const stopRecallBotFn = useServerFn(stopRecallBot);
+  const syncRecallBotFn = useServerFn(syncRecallBot);
+  const [busyBotId, setBusyBotId] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     if (activeTab === "dashboard") {
       loadBots();
+      const timer = setInterval(loadBots, 15000);
+      return () => clearInterval(timer);
     }
   }, [activeTab]);
 
@@ -84,6 +89,50 @@ function MeetingBotPage() {
       console.error("Failed to load bots:", err);
     } finally {
       setLoadingBots(false);
+    }
+  }
+
+  const ACTIVE_STATUSES = new Set([
+    "creating",
+    "queued",
+    "joining_call",
+    "in_waiting_room",
+    "in_call_not_recording",
+    "in_call_recording",
+    "recording_paused",
+    "recording_resumed",
+    "leaving_meeting",
+  ]);
+
+  const isActiveBot = (status?: string) => !!status && ACTIVE_STATUSES.has(status.toLowerCase());
+
+  async function handleStopBot(botId: string) {
+    setBusyBotId(botId);
+    try {
+      await stopRecallBotFn({ data: { botId } });
+      toast.success("Bot stopped. It is leaving the call now.");
+      await loadBots();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to stop bot");
+    } finally {
+      setBusyBotId(null);
+    }
+  }
+
+  async function handleSyncBot(botId: string) {
+    setBusyBotId(botId);
+    try {
+      const res = await syncRecallBotFn({ data: { botId } });
+      if (res.success) {
+        toast.success("Synced transcript + summary.");
+      } else {
+        toast.info(res.reason || "Transcript not ready yet — try again in a minute.");
+      }
+      await loadBots();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to sync bot");
+    } finally {
+      setBusyBotId(null);
     }
   }
 
@@ -472,6 +521,36 @@ function MeetingBotPage() {
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5" />
                         {new Date(bot.created_at).toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        {isActiveBot(bot.bot_status) && (
+                          <button
+                            onClick={() => handleStopBot(bot.id)}
+                            disabled={busyBotId === bot.id}
+                            className="inline-flex items-center gap-1 rounded-xl ink-border bg-pink px-3 py-1.5 text-[11px] font-bold text-primary-foreground pop disabled:opacity-60"
+                          >
+                            {busyBotId === bot.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <XCircle className="h-3.5 w-3.5" />
+                            )}
+                            Stop Bot
+                          </button>
+                        )}
+                        {!bot.summary && !isActiveBot(bot.bot_status) && (
+                          <button
+                            onClick={() => handleSyncBot(bot.id)}
+                            disabled={busyBotId === bot.id}
+                            className="inline-flex items-center gap-1 rounded-xl ink-border bg-yellow px-3 py-1.5 text-[11px] font-bold text-ink pop disabled:opacity-60"
+                          >
+                            {busyBotId === bot.id ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-3.5 w-3.5" />
+                            )}
+                            Sync Summary
+                          </button>
+                        )}
                       </span>
                     </div>
                   </div>

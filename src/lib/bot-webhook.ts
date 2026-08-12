@@ -30,7 +30,7 @@ function unwrapTranscript(transcript: unknown): unknown {
   if (Array.isArray(transcript)) return transcript;
   if (transcript && typeof transcript === "object") {
     const obj = transcript as Record<string, unknown>;
-    for (const key of ["transcripts", "transcription", "segments", "data", "text"]) {
+    for (const key of ["transcripts", "transcription", "segments", "data", "text", "utterances"]) {
       const value = obj[key];
       if (Array.isArray(value) || typeof value === "string") return value;
     }
@@ -74,7 +74,7 @@ type FetchedData = {
   speakers?: unknown;
 };
 
-async function fetchMeetingData(botId: string): Promise<FetchedData> {
+export async function fetchMeetingData(botId: string): Promise<FetchedData> {
   const apiKey = process.env.MEETING_BAAS_API_KEY;
   if (!apiKey) return {};
   const headers = {
@@ -136,11 +136,128 @@ async function fetchMeetingData(botId: string): Promise<FetchedData> {
   return {};
 }
 
-function isFinalEvent(event: string, status: string): boolean {
-  return (
-    /complete|transcript|ended|finished|done|call_ended/i.test(event) ||
-    /complete|completed|done|ended|call_ended/i.test(status)
-  );
+export type BotDataInput = {
+  botId: string;
+  transcriptText?: string;
+  mp4?: string;
+  speakers?: unknown;
+  status?: string;
+};
+
+// Shared persistence: updates the bots row, generates the executive summary
+// via Gemini, and mirrors the result into the meetings table.
+export async function saveBotData(input: BotDataInput): Promise<void> {
+  const { botId, transcriptText, mp4, speakers, status } = input;
+
+  const update: Record<string, unknown> = {};
+  if (mp4) {
+    update.recording_url = mp4;
+    update.recording_status = "done";
+  }
+  if (transcriptText) {
+    update.transcript = transcriptText.slice(0, 200000);
+    update.transcript_status = "done";
+    update.bot_status = "done";
+  }
+  if (speakers) update.speakers = speakers;
+  if (status) update.bot_status = status;
+
+  // Service-role client bypasses RLS — loaded lazily so this module stays server-only.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data: botRow, error } = await supabaseAdmin
+    .from("bots")
+    .update(update as unknown as BotsUpdate)
+    .eq("id", botId)
+    .select("id,user_id,name,meeting_platform,meeting_id,title")
+    .maybeSingle();
+
+  if (error) {
+    console.error("[bot-webhook] failed to update bot row:", error.message);
+    return;
+  }
+
+  if (!botRow) {
+    console.warn("[bot-webhook] no matching bot row for", botId, "- creating placeholder");
+    await supabaseAdmin
+      .from("bots")
+      .upsert(
+        {
+          id: botId,
+          user_id: undefined,
+          name: "urBrief",
+          bot_status: status ?? "done",
+          ...(transcriptText ? { transcript: transcriptText.slice(0, 200000) } : {}),
+        },
+        { onConflict: "id" },
+      );
+    return;
+  }
+
+  if (!transcriptText) return;
+
+  try {
+    const summary = await summarizeTranscript(transcriptText);
+    const next: BotsUpdate = {
+      title: summary.title,
+      summary: summary.summary,
+      action_items: summary.action_items,
+    };
+
+    const meetingRecord = {
+      user_id: botRow.user_id,
+      title: summary.title,
+      source: "google_meet",
+      transcript: transcriptText.slice(0, 200000),
+      summary: summary.summary,
+      action_items: summary.action_items,
+    };
+
+    if (botRow.meeting_id) {
+      const { error: meetingErr } = await supabaseAdmin
+        .from("meetings")
+        .update(meetingRecord)
+        .eq("id", botRow.meeting_id);
+      if (meetingErr) console.error("[bot-webhook] meeting update error:", meetingErr.message);
+    } else {
+      const { data: meetingRow, error: meetingErr } = await supabaseAdmin
+        .from("meetings")
+        .insert(meetingRecord)
+        .select("id")
+        .single();
+      if (meetingErr) {
+        console.error("[bot-webhook] meeting insert error:", meetingErr.message);
+      } else {
+        next.meeting_id = meetingRow.id;
+      }
+    }
+
+    const { error: summaryErr } = await supabaseAdmin.from("bots").update(next).eq("id", botId);
+    if (summaryErr) console.error("[bot-webhook] summary save error:", summaryErr.message);
+  } catch (err) {
+    console.error("[bot-webhook] summary generation failed:", err);
+  }
+}
+
+// Pull a bot's data straight from Meeting BaaS and persist transcript + summary.
+// Used as a manual "Sync" from the dashboard and as a webhook fallback.
+export async function syncBotFromMeetingBaas(botId: string): Promise<{ ok: boolean; reason?: string }> {
+  const data = await fetchMeetingData(botId);
+  if (!data.transcript) {
+    return { ok: false, reason: "transcript not ready yet" };
+  }
+  const transcriptText = transcriptToText(data.transcript);
+  if (!transcriptText) {
+    return { ok: false, reason: "no transcript text found" };
+  }
+  await saveBotData({
+    botId,
+    transcriptText,
+    mp4: data.mp4,
+    speakers: data.speakers,
+    status: data.status ?? "done",
+  });
+  return { ok: true };
 }
 
 export type WebhookResult = { ok: boolean; reason?: string };
@@ -152,6 +269,13 @@ function statusCode(value: unknown): unknown {
     return (value as NestedRecord).code;
   }
   return value;
+}
+
+function isFinalEvent(event: string, status: string): boolean {
+  return (
+    /complete|transcript|ended|finished|done|call_ended|stopped/i.test(event) ||
+    /complete|completed|done|ended|call_ended|stopped/i.test(status)
+  );
 }
 
 export async function handleMeetingBaasWebhook(payload: unknown): Promise<WebhookResult> {
@@ -179,114 +303,45 @@ export async function handleMeetingBaasWebhook(payload: unknown): Promise<Webhoo
 
   const final = isFinalEvent(event, status);
 
-  const update: Record<string, unknown> = { bot_status: status };
-  if (mp4) {
-    update.recording_url = mp4;
-    update.recording_status = "done";
-  }
-
   let transcript = inlineTranscript;
   if (typeof transcriptionUrl === "string" && transcriptionUrl.startsWith("http")) {
     const parsed = await fetchTranscriptFromUrl(transcriptionUrl);
     if (parsed) transcript = parsed;
   }
-  if (final && !transcript) {
+
+  let mp4Url: string | undefined = typeof mp4 === "string" ? mp4 : undefined;
+  let speakersData: unknown = speakers;
+  let resolvedStatus: string | undefined;
+
+  // Transcript not in the payload — pull it from Meeting BaaS directly.
+  if (!transcript && (final || /transcription/i.test(event))) {
     const fetched = await fetchMeetingData(botId);
     transcript = fetched.transcript ?? transcript;
-    if (fetched.mp4 && !mp4) {
-      update.recording_url = fetched.mp4;
-      update.recording_status = "done";
-    }
-    if (fetched.status) update.bot_status = fetched.status;
+    mp4Url = fetched.mp4 ?? mp4Url;
+    speakersData = fetched.speakers ?? speakersData;
+    resolvedStatus = fetched.status;
   }
 
   const transcriptText = transcriptToText(transcript);
-  if (transcriptText) {
-    update.transcript = transcriptText.slice(0, 200000);
-    update.transcript_status = "done";
-    update.bot_status = "done";
-  }
-  if (speakers) update.speakers = speakers;
   if (errorMessage) {
-    update.error_message = String(errorMessage).slice(0, 2000);
-    update.bot_status = "failed";
-  }
-
-  // Service-role client bypasses RLS — loaded lazily so this module stays server-only.
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-  const { data: botRow, error } = await supabaseAdmin
-    .from("bots")
-    .update(update as unknown as BotsUpdate)
-    .eq("id", botId)
-    .select("id,user_id,name,meeting_platform,meeting_id,title")
-    .maybeSingle();
-
-  if (error) {
-    console.error("[bot-webhook] failed to update bot row:", error.message);
-    return { ok: false, reason: error.message };
-  }
-
-  if (!botRow) {
-    console.warn("[bot-webhook] no matching bot row for", botId, "- creating placeholder");
-    const inserted = await supabaseAdmin.from("bots").upsert(
-      {
-        id: botId,
-        user_id: undefined,
-        name: "urBrief",
-        bot_status: status,
-        ...(transcriptText ? { transcript: transcriptText.slice(0, 200000) } : {}),
-      },
-      { onConflict: "id" },
-    );
-    void inserted;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("bots")
+      .update({
+        bot_status: "failed",
+        error_message: String(errorMessage).slice(0, 2000),
+      })
+      .eq("id", botId);
     return { ok: true };
   }
 
-  // Generate the executive summary once a transcript is available.
-  if (transcriptText) {
-    try {
-      const summary = await summarizeTranscript(transcriptText);
-      const next: BotsUpdate = {
-        title: summary.title,
-        summary: summary.summary,
-        action_items: summary.action_items,
-      };
-
-      const meetingRecord = {
-        user_id: botRow.user_id,
-        title: summary.title,
-        source: "google_meet",
-        transcript: transcriptText.slice(0, 200000),
-        summary: summary.summary,
-        action_items: summary.action_items,
-      };
-
-      if (botRow.meeting_id) {
-        const { error: meetingErr } = await supabaseAdmin
-          .from("meetings")
-          .update(meetingRecord)
-          .eq("id", botRow.meeting_id);
-        if (meetingErr) console.error("[bot-webhook] meeting update error:", meetingErr.message);
-      } else {
-        const { data: meetingRow, error: meetingErr } = await supabaseAdmin
-          .from("meetings")
-          .insert(meetingRecord)
-          .select("id")
-          .single();
-        if (meetingErr) {
-          console.error("[bot-webhook] meeting insert error:", meetingErr.message);
-        } else {
-          next.meeting_id = meetingRow.id;
-        }
-      }
-
-      const { error: summaryErr } = await supabaseAdmin.from("bots").update(next).eq("id", botId);
-      if (summaryErr) console.error("[bot-webhook] summary save error:", summaryErr.message);
-    } catch (err) {
-      console.error("[bot-webhook] summary generation failed:", err);
-    }
-  }
+  await saveBotData({
+    botId,
+    transcriptText,
+    mp4: mp4Url,
+    speakers: speakersData,
+    status: transcriptText ? "done" : resolvedStatus ?? status,
+  });
 
   return { ok: true };
 }
