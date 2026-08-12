@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     if (!meeting_url || !bot_name) {
       return NextResponse.json(
         { error: "Missing required fields: meeting_url, bot_name" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         { error: "MEETING_BAAS_API_KEY is not configured in environment variables" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    // Call Meeting Baas endpoint to dispatch bot
-    const baasResponse = await fetch(`${baseUrl}/bots`, {
+    // Call Meeting Baas v2 endpoint to dispatch bot
+    const baasResponse = await fetch(`${baseUrl}/v2/bots`, {
       method: "POST",
       headers: {
         "x-meeting-baas-api-key": apiKey,
@@ -34,7 +34,9 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         meeting_url,
         bot_name: bot_name || "urBrief",
-        speech_to_text: "Gladia",
+        recording_mode: "speaker_view",
+        transcription_enabled: true,
+        transcription_config: { provider: "gladia" },
         webhook_url: `${webpageUrl}/api/webhook`,
       }),
     });
@@ -43,18 +45,18 @@ export async function POST(request: NextRequest) {
       const errorText = await baasResponse.text();
       return NextResponse.json(
         { error: "Failed to create bot with Meeting Baas", details: errorText },
-        { status: baasResponse.status }
+        { status: baasResponse.status },
       );
     }
 
     const baasData = await baasResponse.json();
 
-    // Extract bot ID from response
-    const botId = baasData.bot_id || baasData.id;
+    // Extract bot ID from response (v2 wraps it in data.bot_id)
+    const botId = baasData.data?.bot_id || baasData.bot_id || baasData.id;
     if (!botId) {
       return NextResponse.json(
         { error: "Meeting Baas did not return a valid bot_id", details: baasData },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -76,10 +78,7 @@ export async function POST(request: NextRequest) {
       .insert({
         id: botId,
         name: bot_name,
-        meeting_url:
-          typeof meeting_url === "string"
-            ? meeting_url
-            : JSON.stringify(meeting_url),
+        meeting_url: typeof meeting_url === "string" ? meeting_url : JSON.stringify(meeting_url),
         meeting_platform: platform,
         bot_status: "joining_call",
         joined_at: joinAt,
@@ -116,7 +115,7 @@ export async function POST(request: NextRequest) {
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

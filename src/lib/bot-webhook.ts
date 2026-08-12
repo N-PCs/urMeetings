@@ -24,10 +24,25 @@ function segmentToText(seg: TranscriptSegment): string {
   return "";
 }
 
+// Some transcription JSON wraps the segments in an object (v2 output
+// transcription, v1 meeting_data, ...). Try to unwrap to an array.
+function unwrapTranscript(transcript: unknown): unknown {
+  if (Array.isArray(transcript)) return transcript;
+  if (transcript && typeof transcript === "object") {
+    const obj = transcript as Record<string, unknown>;
+    for (const key of ["transcripts", "transcription", "segments", "data", "text"]) {
+      const value = obj[key];
+      if (Array.isArray(value) || typeof value === "string") return value;
+    }
+  }
+  return transcript;
+}
+
 export function transcriptToText(transcript: unknown): string {
-  if (typeof transcript === "string") return transcript.trim();
-  if (Array.isArray(transcript)) {
-    return transcript
+  const normalized = unwrapTranscript(transcript);
+  if (typeof normalized === "string") return normalized.trim();
+  if (Array.isArray(normalized)) {
+    return normalized
       .map((seg) => segmentToText(seg as TranscriptSegment))
       .filter(Boolean)
       .join("\n")
@@ -85,7 +100,7 @@ async function fetchMeetingData(botId: string): Promise<FetchedData> {
     // fall through to v2
   }
 
-  // v2: /v2/bots/{id} returns data.transcription (URL to JSON) + data.video
+  // v2: /v2/bots/{id} returns data.transcription (URL to JSON) + data.recording/video
   try {
     const v2 = await fetch(`${MEETING_BAAS_BASE_URL}/v2/bots/${encodeURIComponent(botId)}`, {
       headers,
@@ -96,6 +111,7 @@ async function fetchMeetingData(botId: string): Promise<FetchedData> {
           status?: string;
           video?: string;
           audio?: string;
+          recording?: string;
           transcription?: string;
           speakers?: unknown;
         };
@@ -108,7 +124,7 @@ async function fetchMeetingData(botId: string): Promise<FetchedData> {
       }
       return {
         transcript,
-        mp4: d.video ?? d.audio,
+        mp4: d.recording ?? d.video ?? d.audio,
         status: d.status,
         speakers: d.speakers,
       };
@@ -150,8 +166,11 @@ export async function handleMeetingBaasWebhook(payload: unknown): Promise<Webhoo
     return { ok: false, reason: "missing bot_id" };
   }
 
+  // v2 sends data.transcription (URL to the transcript JSON) + data.recording;
+  // v1 sends data.transcript (inline) + data.mp4.
   const inlineTranscript = data.transcript || body.transcript || bot.transcript;
-  const mp4 = data.mp4 || body.mp4 || bot.mp4;
+  const transcriptionUrl = data.transcription || body.transcription || bot.transcription;
+  const mp4 = data.recording || data.mp4 || body.recording || body.mp4 || bot.recording || bot.mp4;
   const speakers = data.speakers || bot.speakers || body.speakers;
   const rawStatus = statusCode(data.status) || statusCode(body.status) || bot.status || event;
   const status = typeof rawStatus === "string" ? rawStatus : "status_update";
@@ -167,6 +186,10 @@ export async function handleMeetingBaasWebhook(payload: unknown): Promise<Webhoo
   }
 
   let transcript = inlineTranscript;
+  if (typeof transcriptionUrl === "string" && transcriptionUrl.startsWith("http")) {
+    const parsed = await fetchTranscriptFromUrl(transcriptionUrl);
+    if (parsed) transcript = parsed;
+  }
   if (final && !transcript) {
     const fetched = await fetchMeetingData(botId);
     transcript = fetched.transcript ?? transcript;

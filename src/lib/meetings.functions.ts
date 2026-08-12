@@ -212,7 +212,7 @@ export const createRecallBot = createServerFn({ method: "POST" })
       );
     }
 
-    const baasResponse = await fetch(`${baseUrl}/bots`, {
+    const baasResponse = await fetch(`${baseUrl}/v2/bots`, {
       method: "POST",
       headers: {
         "x-meeting-baas-api-key": apiKey,
@@ -221,7 +221,9 @@ export const createRecallBot = createServerFn({ method: "POST" })
       body: JSON.stringify({
         meeting_url: data.meetingUrl,
         bot_name: data.botName,
-        speech_to_text: "Gladia",
+        recording_mode: "speaker_view",
+        transcription_enabled: true,
+        transcription_config: { provider: "gladia" },
         webhook_url: `${webpageUrl}/api/webhook`,
       }),
     });
@@ -231,8 +233,17 @@ export const createRecallBot = createServerFn({ method: "POST" })
       throw new Error(`Meeting Baas error (${baasResponse.status}): ${errorText.slice(0, 200)}`);
     }
 
-    const baasData = await baasResponse.json();
-    const botId = baasData.bot_id || baasData.id;
+    const baasData = (await baasResponse.json()) as {
+      data?: { bot_id?: string };
+      bot_id?: string;
+      id?: string;
+    };
+    const botId = baasData.data?.bot_id || baasData.bot_id || baasData.id;
+    if (!botId) {
+      throw new Error(
+        `Meeting Baas did not return a bot_id: ${JSON.stringify(baasData).slice(0, 200)}`,
+      );
+    }
 
     let platform = "unknown";
     if (data.meetingUrl.includes("google.com") || data.meetingUrl.includes("meet.google")) {
