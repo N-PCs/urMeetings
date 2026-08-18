@@ -336,6 +336,18 @@ export const stopRecallBot = createServerFn({ method: "POST" })
       }
     }
 
+    // Wait a moment for transcript to be available, then sync
+    await new Promise((r) => setTimeout(r, 500));
+
+    try {
+      const syncResult = await syncRecallBot({ data: { botId: data.botId } });
+      if (!syncResult.success) {
+        console.log("[stopRecallBot] sync failed (non-critical):", syncResult.reason);
+      }
+    } catch (err) {
+      console.error("[stopRecallBot] sync error:", err);
+    }
+
     await context.supabase
       .from("bots")
       .update({ bot_status: "call_ended" })

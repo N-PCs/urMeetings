@@ -25,6 +25,7 @@ import {
   Monitor,
   Camera,
   ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -111,6 +112,8 @@ function MeetingBotPage() {
     try {
       await stopRecallBotFn({ data: { botId } });
       toast.success("Bot stopped. It is leaving the call now.");
+      // After stopping, sync to get the summary generated and stored
+      await syncRecallBotFn({ data: { botId } });
       await loadBots();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to stop bot");
