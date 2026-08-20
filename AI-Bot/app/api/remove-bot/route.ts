@@ -23,16 +23,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call Meeting Baas DELETE bot endpoint
-    const baasResponse = await fetch(`${baseUrl}/bots/${bot_id}`, {
-      method: "DELETE",
+    // Call Meeting Baas v2 leave bot endpoint
+    const baasResponse = await fetch(`${baseUrl}/v2/bots/${bot_id}/leave`, {
+      method: "POST",
       headers: {
         "x-meeting-baas-api-key": apiKey,
         "Content-Type": "application/json",
       },
     });
 
-    if (!baasResponse.ok) {
+    if (!baasResponse.ok && baasResponse.status !== 409) {
       const errorText = await baasResponse.text();
       return NextResponse.json(
         { error: "Failed to remove bot from Meeting Baas call", details: errorText },
@@ -48,14 +48,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Update bot status in Supabase to leaving_call
-    const { data: updatedBot, error } = await supabase
+    const { error } = await supabase
       .from("bots")
       .update({
         bot_status: "leaving_call",
       })
-      .eq("id", bot_id)
-      .select()
-      .single();
+      .eq("id", bot_id);
 
     if (error) {
       console.warn(`Bot ${bot_id} removed but database update warning:`, error.message);

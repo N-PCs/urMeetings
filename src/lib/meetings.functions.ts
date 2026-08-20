@@ -228,7 +228,7 @@ export const createRecallBot = createServerFn({ method: "POST" })
         // silence_timeout = leave after Ns of no speech (covers host ending the call),
         // no_one_joined_timeout / waiting_room_timeout = give up if nobody shows up.
         timeout_config: {
-          silence_timeout: 120,
+          silence_timeout: 300,
           no_one_joined_timeout: 300,
           waiting_room_timeout: 300,
         },

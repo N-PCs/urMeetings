@@ -24,7 +24,7 @@ export interface RecallAICreateBotResponse {
   }
   bot_name: string
   join_at: string
-  recording_config: any
+  recording_config: unknown
   status_changes: StatusChange[]
   recordings: Recording[]
   output_media: {
@@ -35,9 +35,9 @@ export interface RecallAICreateBotResponse {
       }
     }
   }
-  automatic_leave: any
-  calendar_meetings: any[]
-  metadata: any
+  automatic_leave: unknown
+  calendar_meetings: unknown[]
+  metadata: unknown
 }
 
 export interface StatusChange {
@@ -67,7 +67,7 @@ export interface Recording {
         sub_code: string | null
         updated_at: string
       }
-      metadata: any
+      metadata: unknown
       data: {
         download_url: string
       }
@@ -81,15 +81,15 @@ export interface Recording {
         sub_code: string | null
         updated_at: string
       }
-      metadata: any
+      metadata: unknown
       data: {
         download_url: string
         provider_data_download_url: string
       }
-      diarization: any
-      provider: any
+      diarization: unknown
+      provider: unknown
     }
-    participant_events?: any
+    participant_events?: unknown
     meeting_metadata?: {
       id: string
       created_at: string
@@ -98,7 +98,7 @@ export interface Recording {
         sub_code: string | null
         updated_at: string
       }
-      metadata: any
+      metadata: unknown
       data: {
         title: string
         zoom?: {
@@ -106,9 +106,9 @@ export interface Recording {
         }
       }
     }
-    audio_mixed?: any
+    audio_mixed?: unknown
   }
-  metadata: any
+  metadata: unknown
 }
 
 // Webhook Types
@@ -116,7 +116,7 @@ export interface WebhookPayload {
   data: {
     bot: {
       id: string
-      metadata: any
+      metadata: unknown
     }
     data: {
       code: string
@@ -125,11 +125,11 @@ export interface WebhookPayload {
     }
     recording?: {
       id: string
-      metadata: any
+      metadata: unknown
     }
     transcript?: {
       id: string
-      metadata: any
+      metadata: unknown
     }
   }
   event: string

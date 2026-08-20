@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     const status = botInfo.status || baasData.status || "in_call";
 
     // Prepare Supabase update payload
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       bot_status: status,
     };
 

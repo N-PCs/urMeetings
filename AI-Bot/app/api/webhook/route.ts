@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       body.data?.status ||
       eventType;
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       bot_status: typeof rawStatus === "string" ? rawStatus : JSON.stringify(rawStatus),
     };
 
@@ -45,12 +45,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Update Supabase
-    const { data: updatedBot, error } = await supabase
+    const { error } = await supabase
       .from("bots")
       .update(updateData)
-      .eq("id", botId)
-      .select()
-      .single();
+      .eq("id", botId);
 
     if (error) {
       console.error("Supabase webhook update error:", error);

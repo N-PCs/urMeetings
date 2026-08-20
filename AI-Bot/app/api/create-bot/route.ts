@@ -37,6 +37,11 @@ export async function POST(request: NextRequest) {
         recording_mode: "speaker_view",
         transcription_enabled: true,
         transcription_config: { provider: "gladia" },
+        timeout_config: {
+          silence_timeout: 300,
+          no_one_joined_timeout: 300,
+          waiting_room_timeout: 300,
+        },
         webhook_url: `${webpageUrl}/api/webhook`,
       }),
     });
