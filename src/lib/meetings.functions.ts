@@ -322,6 +322,7 @@ export const stopRecallBot = createServerFn({ method: "POST" })
         "x-meeting-baas-api-key": apiKey,
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({}),
     });
 
     let leaveResult: { success?: boolean; error?: string } = {};
@@ -336,21 +337,31 @@ export const stopRecallBot = createServerFn({ method: "POST" })
       }
     }
 
-    // Wait a moment for transcript to be available, then sync
-    await new Promise((r) => setTimeout(r, 500));
-
-    try {
-      const syncResult = await syncRecallBot({ data: { botId: data.botId } });
-      if (!syncResult.success) {
-        console.log("[stopRecallBot] sync failed (non-critical):", syncResult.reason);
+    // Poll Meeting BaaS to sync transcript + generate Gemini summary
+    let synced = false;
+    let syncReason = "";
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      await new Promise((r) => setTimeout(r, attempt === 1 ? 1500 : 3000));
+      try {
+        const syncResult = await syncRecallBot({ data: { botId: data.botId } });
+        if (syncResult.success) {
+          synced = true;
+          break;
+        } else {
+          syncReason = syncResult.reason || "transcript not ready yet";
+        }
+      } catch (err) {
+        syncReason = err instanceof Error ? err.message : "Sync error";
       }
-    } catch (err) {
-      console.error("[stopRecallBot] sync error:", err);
+    }
+
+    if (!synced) {
+      console.log(`[stopRecallBot] Initial sync attempts completed. Reason: ${syncReason}`);
     }
 
     await context.supabase
       .from("bots")
-      .update({ bot_status: "call_ended" })
+      .update({ bot_status: synced ? "done" : "call_ended" })
       .eq("id", data.botId);
 
     return { success: true, bot_id: data.botId, data: leaveResult };

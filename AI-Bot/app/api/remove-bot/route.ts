@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
         "x-meeting-baas-api-key": apiKey,
         "Content-Type": "application/json",
       },
+      body: JSON.stringify({}),
     });
 
     if (!baasResponse.ok && baasResponse.status !== 409) {
