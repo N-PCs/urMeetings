@@ -339,6 +339,6 @@ MIT
 
 <div align="center">
 
-Made by **[Neel Pandey](https://github.com/N-PCs)**
+Made by **[Neel Pandey](https://github.com/N-PCs)** for OPEN SOURCE Community!!
 
 </div>
